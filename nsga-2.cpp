@@ -1,4 +1,8 @@
 #include<stdio.h>
+#include<algorithm>
+#include<vector>
+
+using namespace std;
 
 const int SIZEOFDV = 2000;
 
@@ -22,7 +26,14 @@ int number_of_objectives, number_of_decision_variables, min_range_of_decision_va
 //**目标函数   Minimize the balance of processor workload
 
 
+//*******
+//**input
+//**t(m,n) Execution time of a task on a processor
+//**c(m,n) Communication cost between two tasks
 
+struct Individual{
+    vector<int> machine[10];
+};
 
 int main(){
 
@@ -42,6 +53,9 @@ int main(){
         printf("Input the maximum value for decision variable ");
         scanf("%d", max_range_of_decision_variable[i]);
     }
+
+    //initial function 初始化一个解
+
 
     return 0;
 }
