@@ -102,7 +102,8 @@ void non_domination_sort(Individual individuals[], int length){
             }
         }
         rank++;
-        //fuzhi
+        frontCollection.erase(frontCollection.begin(), frontCollection.end());
+        frontCollection.assign(tempCollection.begin(), tempCollection.end());
     }
 }
 
