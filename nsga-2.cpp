@@ -36,10 +36,14 @@ double t[SIZEOFDV][SIZEOFDV];
 double c[SIZEOFDV][SIZEOFDV];
 
 struct Individual{
+    int id;
     vector< vector<int> > machine; //save permutation of the tasks
-    double communication_cost;
-    double maxspan;
-};
+    double communication_cost; //object 1
+    double maxspan; //object 2
+    int front; //rank of domination
+    vector< Individual > S; //the collections dominated by this Individual
+    int n;// count of dominated solution
+}Collection[100];
 
 
 
@@ -48,18 +52,57 @@ void evaluate_objective(Individual *i){
     vector<int>:: iterator jter;
     i->maxspan = 0;
     i->communication_cost = 0;
-    int k = 0;
     for(iter = i->machine.begin(); iter != i->machine.end(); ++ iter){
         double span = 0;
         for(jter = (*iter).begin(); jter != (*iter).end(); ++ jter){
-            span += t[k][(*jter)];
-            if(c[k][(*jter)] > 0){
-                i->communication_cost += c[k][(*jter)];
+            span += t[i->id][(*jter)];
+            if(c[i->id][(*jter)] > 0){
+                i->communication_cost += c[i->id][(*jter)];
             }
         }
         if(span > i->maxspan){
             i->maxspan = span;
         }
+    }
+}
+
+void non_domination_sort(Individual individuals[], int length){
+    vector< Individual > frontCollection;
+    vector< Individual > tempCollection;
+    int rank = 1;
+    for(int i = 0 ; i < length ; i ++){
+        //initial
+        individuals[i].S.erase(individuals[i].S.begin(), individuals[i].S.end());
+        individuals[i].n = 0;
+        for(int j = 0 ; j < length ; j ++){
+            // if individual[i] dominate individual[j]
+            if(individuals[i].maxspan < individuals[j].maxspan && individuals[i].communication_cost < individuals[j].communication_cost){
+                // let individual[j] added to the S of the individual[i]
+                individuals[i].S.push_back(individuals[j]);
+            }else if(individuals[j].maxspan < individuals[i].maxspan && individuals[j].communication_cost < individuals[i].communication_cost){
+                individuals[i].n = individuals[i].n + 1;
+            }
+        }
+    }
+    for(int i = 0 ; i < length ; i ++){
+        if(individuals[i].n == 0){
+            individuals[i].front = rank;
+            frontCollection.push_back(individuals[i]);
+        }
+    }
+    while(!frontCollection.empty()){
+        tempCollection.erase(tempCollection.begin(), tempCollection.end());
+        for(vector<Individual>::iterator iter = frontCollection.begin() ; iter != frontCollection.end() ; ++iter){
+            for(vector<Individual>::iterator jter = (*iter).S.begin() ; jter != (*iter).S.end() ; ++jter){
+                (*jter).n = (*jter).n - 1;
+                if((*jter).n == 0){
+                    (*iter).front = rank + 1;
+                    tempCollection.push_back((*iter));
+                }
+            }
+        }
+        rank++;
+        //fuzhi
     }
 }
 
@@ -84,6 +127,8 @@ int main(){
 
     //Initialize the population
 
+
+    //Sort the initialized population
 
 
     //**test area
