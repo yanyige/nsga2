@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<algorithm>
 #include<vector>
+#include<math.h>
 
 using namespace std;
 
@@ -20,6 +21,7 @@ int pop, gen;
 //**max_range_of_decision_variable[] - maximum possible value for each decision variable
 
 int number_of_objectives, number_of_decision_variables, min_range_of_decision_variable[SIZEOFDV], max_range_of_decision_variable[SIZEOFDV];
+int n, m;
 
 
 //*******
@@ -43,6 +45,8 @@ struct Individual{
     int front; //rank of domination
     vector< Individual > S; //the collections dominated by this Individual
     int n;// count of dominated solution
+    double dfitness; //fitness
+    double crowd_distance;
 }Collection[100];
 
 
@@ -64,8 +68,10 @@ void evaluate_objective(Individual *i){
             i->maxspan = span;
         }
     }
+    i->dfitness = i->maxspan + i->communication_cost;
 }
 
+// ∑«÷ß≈‰≈≈–Ú
 void non_domination_sort(Individual individuals[], int length){
     vector< Individual > frontCollection;
     vector< Individual > tempCollection;
@@ -105,6 +111,68 @@ void non_domination_sort(Individual individuals[], int length){
         frontCollection.erase(frontCollection.begin(), frontCollection.end());
         frontCollection.assign(tempCollection.begin(), tempCollection.end());
     }
+}
+
+//Main Process
+void solve(){
+
+    for(int i = 1 ; i <= gen ; i ++){
+
+    }
+
+}
+
+//round robin selection
+int round_robin_selection(Individual individuals[], int length){
+    int target = 0;
+    double total_fitness = 0;
+    for(int i = 0 ; i < length ; i ++){
+        total_fitness = total_fitness + individuals[i].dfitness;
+    }
+    double dRange = (((rand()+ rand())%100001)/(100000 + 0.0000001)) * total_fitness;
+    double dCursor = 0;
+    for(int i = 0 ; i < length ; i ++){
+        dCursor = dCursor + individuals[i].dfitness;
+        target ++;
+        if(dCursor > dRange){
+            break;
+        }
+    }
+    return target;
+}
+
+//make_new_pop
+void gacrossover(Individual individuals[], int length, double proc){
+
+    //crossover
+    //random point of crossover\
+    //proc is the possiblity of crossover
+
+    int target1 = round_robin_selection(individuals, length);
+    int target2 = round_robin_selection(individuals, length);
+    while(target1 == target2){
+        target2 = round_robin_selection(individuals, length);
+    }
+
+    //crossover
+    double temp = rand();
+    if(temp < proc) return ;
+    int m1 = rand() * (m-1);
+    int m2 = rand() * (m-1);
+    vector<int>::size_type x1 = m1;
+    vector<int>::size_type x2 = m2;
+    //change machine
+    individuals[target1].machine[x1].swap(individuals[target2].machine[x2]);
+
+}
+
+void gamutation(Individual individuals[], int length, double proc){
+
+    //mutation
+    if(proc < rand()){
+
+    }
+
 }
 
 int main(){
