@@ -3,10 +3,16 @@
 #include<algorithm>
 #include<vector>
 #include<math.h>
+#include<set>
+#include<stack>
 
 using namespace std;
 
 const int SIZEOFDV = 2000;
+const int number_of_tasks = 14;
+const int number_of_machines = 8;
+const int m = number_of_machines;
+const int n = number_of_tasks;
 
 //*******
 //**pop - Population size
@@ -21,7 +27,7 @@ int pop, gen;
 //**max_range_of_decision_variable[] - maximum possible value for each decision variable
 
 int number_of_objectives, number_of_decision_variables, min_range_of_decision_variable[SIZEOFDV], max_range_of_decision_variable[SIZEOFDV];
-int n, m;
+//int n, m;
 
 
 //*******
@@ -36,10 +42,10 @@ int n, m;
 
 double t[SIZEOFDV][SIZEOFDV];
 double c[SIZEOFDV][SIZEOFDV];
+bool uesd[SIZEOFDV];
 
 struct Individual{
-    int id;
-    vector< vector<int> > machine; //save permutation of the tasks
+    vector<int> machine[number_of_machines]; //save permutation of the tasks
     double communication_cost; //object 1
     double maxspan; //object 2
     int front; //rank of domination
@@ -50,16 +56,15 @@ struct Individual{
 }Collection[100];
 
 void evaluate_objective(Individual *i){
-    vector< vector<int> >::iterator iter;
-    vector<int>:: iterator jter;
+    vector<int>:: iterator iter;
     i->maxspan = 0;
     i->communication_cost = 0;
-    for(iter = i->machine.begin(); iter != i->machine.end(); ++ iter){
+    for(int j = 0 ; j < number_of_machines ; j ++){
         double span = 0;
-        for(jter = (*iter).begin(); jter != (*iter).end(); ++ jter){
-            span += t[i->id][(*jter)];
-            if(c[i->id][(*jter)] > 0){
-                i->communication_cost += c[i->id][(*jter)];
+        for(iter = i->machine[j].begin(); iter != i->machine[j].end(); ++ iter){
+            span += t[j][(*iter)];
+            if(c[j][(*iter)] > 0){
+                i->communication_cost += c[j][(*iter)];
             }
         }
         if(span > i->maxspan){
@@ -114,9 +119,7 @@ void non_domination_sort(Individual individuals[], int length){
 //Main Process
 void solve(){
 
-    for(int i = 1 ; i <= gen ; i ++){
 
-    }
 
 }
 
@@ -157,10 +160,10 @@ void gacrossover(Individual individuals[], int length, double proc){
     if(temp < proc) return ;
     int m1 = rand() * (m-1);
     int m2 = rand() * (m-1);
-    vector<int>::size_type x1 = m1;
-    vector<int>::size_type x2 = m2;
+//    vector<int>::size_type x1 = m1;
+//    vector<int>::size_type x2 = m2;
     //change machine
-    individuals[target1].machine[x1].swap(individuals[target2].machine[x2]);
+    individuals[target1].machine[m1].swap(individuals[target2].machine[m2]);
 
 }
 
@@ -174,8 +177,47 @@ void gamutation(Individual individuals[], int length, double proc){
 }
 
 void init(){
-    for(int it = 0 ; it < 100 ; it++){
-
+    set<int> flag_machine;
+    stack<int> segment;
+    stack<int> interval;
+    int kk, kkk;
+    for(int i = 1 ; i <= gen ; i ++){
+        flag_machine.clear();
+        while(!segment.empty()){
+            segment.pop();
+        }
+        for(int j = 0 ; j < n * 2 ; j ++){
+            int temp = floor(rand() * n);
+            if(flag_machine.insert(temp).second){
+                segment.push(temp);
+            }
+        }
+        for(int k = 0 ; k < n ; k ++){
+            if(flag_machine.insert(k).second){
+                segment.push(k);
+            }
+        }
+        while(!interval.empty()){
+            interval.pop();
+        }
+        flag_machine.clear();
+        kk = m;
+        while(kk){
+            int temp = floor(rand() * n);
+            if(flag_machine.insert(temp).second){
+                interval.push(temp);
+                kk --;
+            }
+        }
+        kkk = 0;
+        while(!interval.empty()){
+            kk = interval.top();
+            interval.pop();
+            while(kk --){
+                Collection[i].machine[kkk].push_back(segment.top());
+                segment.pop();
+            }
+        }
     }
 }
 
