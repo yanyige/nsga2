@@ -63,6 +63,7 @@ void evaluate_objective(Individual *i){
         double span = 0;
         for(iter = i->machine[j].begin(); iter != i->machine[j].end(); ++ iter){
             span += t[j][(*iter)];
+            printf("span=%lf\n", span);
             if(c[j][(*iter)] > 0){
                 i->communication_cost += c[j][(*iter)];
             }
@@ -116,12 +117,7 @@ void non_domination_sort(Individual individuals[], int length){
     }
 }
 
-//Main Process
-void solve(){
 
-
-
-}
 
 //round robin selection
 int round_robin_selection(Individual individuals[], int length){
@@ -146,7 +142,7 @@ int round_robin_selection(Individual individuals[], int length){
 void gacrossover(Individual individuals[], int length, double proc){
 
     //crossover
-    //random point of crossover\
+    //random point of crossover
     //proc is the possiblity of crossover
 
     int target1 = round_robin_selection(individuals, length);
@@ -179,15 +175,18 @@ void gamutation(Individual individuals[], int length, double proc){
 void init(){
     set<int> flag_machine;
     stack<int> segment;
-    stack<int> interval;
+    set<int> interval;
     int kk, kkk;
+    vector<int>::iterator iter;
+    set<int>::iterator iiter;
+    int tempkk;
     for(int i = 1 ; i <= gen ; i ++){
         flag_machine.clear();
         while(!segment.empty()){
             segment.pop();
         }
         for(int j = 0 ; j < n * 2 ; j ++){
-            int temp = floor(rand() * n);
+            int temp = int(rand() % n);
             if(flag_machine.insert(temp).second){
                 segment.push(temp);
             }
@@ -197,32 +196,80 @@ void init(){
                 segment.push(k);
             }
         }
-        while(!interval.empty()){
-            interval.pop();
-        }
-        flag_machine.clear();
-        kk = m;
+        interval.clear();
+        kk = m - 1;
         while(kk){
-            int temp = floor(rand() * n);
-            if(flag_machine.insert(temp).second){
-                interval.push(temp);
-                kk --;
+            int temp = int(rand() % (n+1));
+            while(!interval.insert(temp).second){
+                temp = int(rand() % (n+1));
             }
+            kk --;
         }
+//        printf("生成的序列是:\n");
+//        while(!segment.empty()){
+//            printf("%d ", segment.top());
+//            segment.pop();
+//        }
+//        printf("*********************\n");
         kkk = 0;
-        while(!interval.empty()){
-            kk = interval.top();
-            interval.pop();
-            while(kk --){
+        for(iiter = interval.begin(); iiter != interval.end(); iiter ++){
+//            printf("interval中的值=%d\n", (*iiter));
+            if(iiter == interval.begin()){
+                kk = (*iiter);
+            }else{
+//                printf("intervar=%d kk=%d\n", (*iiter), kk);
+                kk = (*iiter) - kk;
+            }
+//            kk = (*iiter);
+//            printf("区间大小1=%d\n", kk);
+            tempkk = kk;
+            while(tempkk --){
                 Collection[i].machine[kkk].push_back(segment.top());
                 segment.pop();
             }
+            kkk ++;
+            kk = (*iiter);
+        }
+
+        kk = n - kk;
+        tempkk = kk;
+        while(tempkk --){
+            Collection[i].machine[kkk].push_back(segment.top());
+            segment.pop();
+        }
+
+
+
+//        for(int j = 0 ; j < m ; j ++){
+//            printf("第%d台机器的序列", j);
+//            for(iter = Collection[i].machine[j].begin(); iter != Collection[i].machine[j].end(); iter ++){
+//                printf("%d ", (*iter));
+//            }
+//            printf("\n");
+//        }
+//        getchar();
+    }
+}
+
+//Main Process
+void solve(){
+    while(~scanf("%d", &gen)){
+        init();
+        for(int i = 0 ; i < gen ; i ++){
+            evaluate_objective(&Collection[i]);
+            printf("maxspan = %lf\n", Collection[i].maxspan);
+            printf("communicate = %lf\n", Collection[i].communication_cost);
         }
     }
+
+
 }
 
 int main(){
 
+
+
+    solve();
 //    printf("NSGA-II: Please enter the population size and number of generations as input arguments.\npopulation size: ");
 //    scanf("%d", &pop);
 //    printf("number of generations: ");
