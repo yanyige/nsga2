@@ -13,6 +13,7 @@ const int number_of_tasks = 14;
 const int number_of_machines = 8;
 const int m = number_of_machines;
 const int n = number_of_tasks;
+const int inf = 0x3f3f3f3f;
 
 //*******
 //**pop - Population size
@@ -53,7 +54,15 @@ struct Individual{
     int n;// count of dominated solution
     double dfitness; //fitness
     double crowd_distance;
+    double communication_cost_max;
+    double communication_cost_min;
+    double maxspan_max;
+    double maxspan_min;
 }Collection[100];
+
+int cmp(const void *a, const void *b){
+    return (*(Individual *)a).communication_cost > (*(Individual *)b).communication_cost ? 1:-1;
+}
 
 void evaluate_objective(Individual *i){
     vector<int>:: iterator iter;
@@ -170,6 +179,16 @@ void gamutation(Individual individuals[], int length, double proc){
 
     }
 
+}
+
+//º∆À„”µº∑æ‡¿Î
+void crowdDistance(Individual individuals[], int length){
+    qsort(individuals, length, sizeof(individuals[0]), cmp);
+    individuals[0].crowd_distance = inf;
+    individuals[length - 1].crowd_distance = inf;
+    for(int i = 1 ; i < length - 1 ; i ++){
+        individuals[i].crowd_distance += individuals[i+1].communication_cost - individuals[i-1].communication_cost;
+    }
 }
 
 void init(){
