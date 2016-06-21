@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include<algorithm>
 #include<vector>
 #include<math.h>
@@ -8,7 +9,7 @@
 
 using namespace std;
 
-const int SIZEOFDV = 2000;
+const int MAXN = 2000;
 const int number_of_tasks = 14;
 const int number_of_machines = 8;
 const int m = number_of_machines;
@@ -27,7 +28,7 @@ int pop, gen;
 //**min_range_of_decision_variable[] - minimum possible value for each decision variable
 //**max_range_of_decision_variable[] - maximum possible value for each decision variable
 
-int number_of_objectives, number_of_decision_variables, min_range_of_decision_variable[SIZEOFDV], max_range_of_decision_variable[SIZEOFDV];
+int number_of_objectives, number_of_decision_variables, min_range_of_decision_variable[MAXN], max_range_of_decision_variable[MAXN];
 //int n, m;
 
 
@@ -41,9 +42,33 @@ int number_of_objectives, number_of_decision_variables, min_range_of_decision_va
 //**t(m,n) Execution time of a task on a processor
 //**c(m,n) Communication cost between two tasks
 
-double t[SIZEOFDV][SIZEOFDV];
-double c[SIZEOFDV][SIZEOFDV];
-bool uesd[SIZEOFDV];
+double t[m][n] = {
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14}
+};
+double c[n][n] = {
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+    {1,2,3,4,5,6,7,8,9,10,11,12,13,14}
+};
+bool uesd[MAXN];
 
 struct Individual{
     vector<int> machine[number_of_machines]; //save permutation of the tasks
@@ -54,11 +79,7 @@ struct Individual{
     int n;// count of dominated solution
     double dfitness; //fitness
     double crowd_distance;
-    double communication_cost_max;
-    double communication_cost_min;
-    double maxspan_max;
-    double maxspan_min;
-}Collection[100];
+}Collection[100], new_individual;
 
 int cmp(const void *a, const void *b){
     return (*(Individual *)a).communication_cost > (*(Individual *)b).communication_cost ? 1:-1;
@@ -66,15 +87,18 @@ int cmp(const void *a, const void *b){
 
 void evaluate_objective(Individual *i){
     vector<int>:: iterator iter;
+    vector<int>:: iterator jter;
+    i->n = inf;
     i->maxspan = 0;
     i->communication_cost = 0;
     for(int j = 0 ; j < number_of_machines ; j ++){
         double span = 0;
         for(iter = i->machine[j].begin(); iter != i->machine[j].end(); ++ iter){
             span += t[j][(*iter)];
-            printf("span=%lf\n", span);
-            if(c[j][(*iter)] > 0){
-                i->communication_cost += c[j][(*iter)];
+            for(jter = i->machine[j].begin(); jter != i->machine[j].end(); ++ jter){
+                if(c[j][(*iter)] > 0 && iter != jter){
+                    i->communication_cost += c[j][(*iter)];
+                }
             }
         }
         if(span > i->maxspan){
@@ -129,55 +153,88 @@ void non_domination_sort(Individual individuals[], int length){
 
 
 //round robin selection
-int round_robin_selection(Individual individuals[], int length){
-    int target = 0;
-    double total_fitness = 0;
-    for(int i = 0 ; i < length ; i ++){
-        total_fitness = total_fitness + individuals[i].dfitness;
-    }
-    double dRange = (((rand()+ rand())%100001)/(100000 + 0.0000001)) * total_fitness;
-    double dCursor = 0;
-    for(int i = 0 ; i < length ; i ++){
-        dCursor = dCursor + individuals[i].dfitness;
-        target ++;
-        if(dCursor > dRange){
-            break;
+//int round_robin_selection(Individual individuals[], int length){
+//    int target = 0;
+//    double total_fitness = 0;
+//    for(int i = 0 ; i < length ; i ++){
+//        total_fitness = total_fitness + individuals[i].dfitness;
+//    }
+//    double dRange = (((rand()+ rand())%100001)/(100000 + 0.0000001)) * total_fitness;
+//    double dCursor = 0;
+//    for(int i = 0 ; i < length ; i ++){
+//        dCursor = dCursor + individuals[i].dfitness;
+//        target ++;
+//        if(dCursor > dRange){
+//            break;
+//        }
+//    }
+//    return target;
+//}
+
+//void gacrossover(Individual individuals[], int length, double proc){
+//
+//    //crossover
+//    //random point of crossover
+//    //proc is the possiblity of crossover
+//
+//    int target1 = round_robin_selection(individuals, length);
+//    int target2 = round_robin_selection(individuals, length);
+//    while(target1 == target2){
+//        target2 = round_robin_selection(individuals, length);
+//    }
+//
+//    //crossover
+//    double temp = rand();
+//    if(temp < proc) return ;
+//    int m1 = rand() * (m-1);
+//    int m2 = rand() * (m-1);
+////    vector<int>::size_type x1 = m1;
+////    vector<int>::size_type x2 = m2;
+//    //change machine
+//    individuals[target1].machine[m1].swap(individuals[target2].machine[m2]);
+//
+//}
+
+void gacrossover(int target1, int target2, Individual *individual){//将选择的两个个体进行交叉
+    int myMap[MAXN << 1][0];//记录一个任务的所属机器
+    vector<int>:: iterator iter;
+    for(int j = 0 ; j < m ; ++ j){
+        for(iter = Collection[target1].machine[j].begin(); iter != Collection[target1].machine[j].end(); iter ++){
+            myMap[(*iter)][0] = j;
+        }
+        for(iter = Collection[target2].machine[j].begin(); iter != Collection[target2].machine[j].end(); iter ++){
+            myMap[(*iter)][1] = j;
         }
     }
-    return target;
+    for(int i = 0 ; i < n ; ++ i){
+        int temp = round(rand() / 2);
+        individual -> machine[myMap[i][temp]].push_back(i);//生成一个新的个体
+    }
 }
 
-//make_new_pop
-void gacrossover(Individual individuals[], int length, double proc){
-
-    //crossover
-    //random point of crossover
-    //proc is the possiblity of crossover
-
-    int target1 = round_robin_selection(individuals, length);
-    int target2 = round_robin_selection(individuals, length);
-    while(target1 == target2){
-        target2 = round_robin_selection(individuals, length);
-    }
-
-    //crossover
-    double temp = rand();
-    if(temp < proc) return ;
-    int m1 = rand() * (m-1);
-    int m2 = rand() * (m-1);
-//    vector<int>::size_type x1 = m1;
-//    vector<int>::size_type x2 = m2;
-    //change machine
-    individuals[target1].machine[m1].swap(individuals[target2].machine[m2]);
+void light_perturbation(int segment[], int size_of_segment){
 
 }
 
-void gamutation(Individual individuals[], int length, double proc){
+void heavy_perturbation(int segment[], int size_of_segment){
 
-    //mutation  变异操作
-    if(proc < rand()){
+}
 
+
+void gamutation(Individual *individual){
+
+    int segment[MAXN];
+    stack<int> interval;
+    int size_of_segment = 0;
+    vector<int>::iterator iter;
+
+    for(int i = 0 ; i < m ; i ++){
+        interval.push(individual -> machine[i].size());
+        for(iter = individual -> machine[i].begin(); iter != individual -> machine[i].end(); ++ iter){
+            segment[size_of_segment ++] = (*iter);
+        }
     }
+
 
 }
 
@@ -191,6 +248,25 @@ void crowdDistance(Individual individuals[], int length){
     }
 }
 
+void make_new_pop(Individual individuals[], int length){
+
+    int flag_individual[MAXN]; //标记这个个体是否被选择过
+    //tournament_selection
+    memset(flag_individual, 0, sizeof(flag_individual)); //初始全部未被选择
+    int target1 = rand() % (length - 1);
+    while(flag_individual[target1] != 0){
+        target1 = rand() % (length - 1);
+    }
+    int target2 = rand() % (length - 1);
+    while(flag_individual[target2] != 0){
+        target2 = rand() % (length - 1);
+    } //随机选择两个目标
+    flag_individual[target1] = 1;
+    flag_individual[target2] = 1;
+    gacrossover(target1, target2, &new_individual);
+
+}
+
 void init(){
     set<int> flag_machine;
     stack<int> segment;
@@ -199,7 +275,7 @@ void init(){
     vector<int>::iterator iter;
     set<int>::iterator iiter;
     int tempkk;
-    for(int i = 1 ; i <= gen ; i ++){
+    for(int i = 0 ; i < pop ; i ++){
         flag_machine.clear();
         while(!segment.empty()){
             segment.pop();
@@ -218,9 +294,11 @@ void init(){
         interval.clear();
         kk = m - 1;
         while(kk){
-            int temp = int(rand() % (n+1));
+            int temp = int(rand() % (n));
+            if(temp == 0) temp = 1;
             while(!interval.insert(temp).second){
-                temp = int(rand() % (n+1));
+                temp = int(rand() % (n));
+                if(temp == 0) temp = 1;
             }
             kk --;
         }
@@ -272,12 +350,16 @@ void init(){
 
 //Main Process
 void solve(){
-    while(~scanf("%d", &gen)){
+    while(~scanf("%d", &pop)){
         init();
-        for(int i = 0 ; i < gen ; i ++){
+
+        make_new_pop(Collection, pop);
+
+
+        for(int i = 0 ; i < pop ; i ++){
             evaluate_objective(&Collection[i]);
-            printf("maxspan = %lf\n", Collection[i].maxspan);
-            printf("communicate = %lf\n", Collection[i].communication_cost);
+            printf("maxspan = %.2lf\n", Collection[i].maxspan);
+            printf("communicate = %.2lf\n", Collection[i].communication_cost);
         }
     }
 
