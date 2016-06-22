@@ -85,6 +85,15 @@ int cmp(const void *a, const void *b){
     return (*(Individual *)a).communication_cost > (*(Individual *)b).communication_cost ? 1:-1;
 }
 
+void copy_individual(Individual *i, Individual *j){
+    vector<int>:: iterator iter;
+    for(int ii = 0 ; ii < m ; ii ++){
+        for(iter = j->machine[ii].begin(); iter != j->machine[ii].end(); ++ iter){
+            i->machine[ii].push_back(*iter);
+        }
+    }
+}
+
 void evaluate_objective(Individual *i){
     vector<int>:: iterator iter;
     vector<int>:: iterator jter;
@@ -196,8 +205,13 @@ void non_domination_sort(Individual individuals[], int length){
 //}
 
 void gacrossover(int target1, int target2, Individual *individual){//½«Ñ¡ÔñµÄÁ½¸ö¸öÌå½øÐÐ½»²æ
-    int myMap[MAXN << 1][0];//¼ÇÂ¼Ò»¸öÈÎÎñµÄËùÊô»úÆ÷
+    int myMap[MAXN << 1][2];//¼ÇÂ¼Ò»¸öÈÎÎñµÄËùÊô»úÆ÷
     vector<int>:: iterator iter;
+
+    for(int j = 0 ; j < m ; ++ j){
+        vector<int>().swap(individual->machine[j]);
+    }
+
     for(int j = 0 ; j < m ; ++ j){
         for(iter = Collection[target1].machine[j].begin(); iter != Collection[target1].machine[j].end(); iter ++){
             myMap[(*iter)][0] = j;
@@ -206,17 +220,43 @@ void gacrossover(int target1, int target2, Individual *individual){//½«Ñ¡ÔñµÄÁ½¸
             myMap[(*iter)][1] = j;
         }
     }
+
     for(int i = 0 ; i < n ; ++ i){
-        int temp = round(rand() / 2);
-        individual -> machine[myMap[i][temp]].push_back(i);//Éú³ÉÒ»¸öÐÂµÄ¸öÌå
+        int temp = rand() % 2;
+        individual -> machine[myMap[i][temp]].push_back(i);//Éú³ÉÒ»¸öÐÂµÄ¸öÌå,±£´æµ½individualÖÐ
     }
 }
 
-void light_perturbation(int segment[], int size_of_segment){
-
+void light_perturbation(int segment[], int size_of_segment, int interval[]){
+    int temp, k, pos1, pos2;
+    temp = rand() % m;
+    k = 0;
+    for(int i = 0 ; i <= temp ; ++ i){
+        k += interval[i];
+    }
+    if(k == 0 || k == 1) k = 2;
+    pos1 = rand() % k;
+    pos2 = k + (rand() % (size_of_segment - k));
+    temp = segment[pos1];
+    for(int i = pos1 ; i < pos2 ; i ++){
+        segment[i] = segment[i + 1];
+    }
+    segment[pos2] = temp;
 }
 
-void heavy_perturbation(int segment[], int size_of_segment){
+void heavy_perturbation(int segment[], int size_of_segment, int interval[]){
+    int temp, k, pos1, pos2;
+    temp = rand() % m;
+    k = 0;
+    for(int i = 0 ; i < temp ; ++ i){
+        k += interval[i];
+    }
+    if(k == 0 || k == 1) k = 2;
+    pos1 = rand() % k;
+    pos2 = k + (rand() % (size_of_segment - k));
+    temp = segment[pos1];
+    segment[pos2] = segment[pos1];
+    segment[pos1] = temp;
 
 }
 
@@ -224,17 +264,33 @@ void heavy_perturbation(int segment[], int size_of_segment){
 void gamutation(Individual *individual){
 
     int segment[MAXN];
-    stack<int> interval;
+    int interval[MAXN];
     int size_of_segment = 0;
     vector<int>::iterator iter;
 
     for(int i = 0 ; i < m ; i ++){
-        interval.push(individual -> machine[i].size());
+        interval[i] = individual -> machine[i].size();
         for(iter = individual -> machine[i].begin(); iter != individual -> machine[i].end(); ++ iter){
             segment[size_of_segment ++] = (*iter);
         }
     }
 
+    int temp = rand() % 2;
+    if(temp == 0) light_perturbation(segment, size_of_segment, interval);
+    else heavy_perturbation(segment, size_of_segment, interval);
+
+    for(int j = 0 ; j < m ; ++ j){
+        vector<int>().swap(individual->machine[j]);
+    }
+
+    temp = 0;
+    for(int i = 0 ; i < m ; i ++){
+//        printf("interval[%d] = %d\n", i , interval[i]);
+        for(int j = 0 ; j < interval[i] ; j ++){
+            individual->machine[i].push_back(segment[temp]);
+            temp ++;
+        }
+    }
 
 }
 
@@ -250,21 +306,41 @@ void crowdDistance(Individual individuals[], int length){
 
 void make_new_pop(Individual individuals[], int length){
 
+    vector<int>::iterator iter;
     int flag_individual[MAXN]; //±ê¼ÇÕâ¸ö¸öÌåÊÇ·ñ±»Ñ¡Ôñ¹ý
     //tournament_selection
     memset(flag_individual, 0, sizeof(flag_individual)); //³õÊ¼È«²¿Î´±»Ñ¡Ôñ
-    int target1 = rand() % (length - 1);
-    while(flag_individual[target1] != 0){
-        target1 = rand() % (length - 1);
-    }
-    int target2 = rand() % (length - 1);
-    while(flag_individual[target2] != 0){
-        target2 = rand() % (length - 1);
-    } //Ëæ»úÑ¡ÔñÁ½¸öÄ¿±ê
-    flag_individual[target1] = 1;
-    flag_individual[target2] = 1;
-    gacrossover(target1, target2, &new_individual);
+    for(int i = 0 ; i < length ; i ++){
+        int target1 = rand() % ((length<<1));
+        while(flag_individual[target1] != 0){
+            target1 = rand() % ((length<<1));
+        }
+        flag_individual[target1] = 1;
+        int target2 = rand() % ((length<<1));
+        while(flag_individual[target2] != 0){
+            target2 = rand() % ((length<<1));
+        } //Ëæ»úÑ¡ÔñÁ½¸öÄ¿±ê
+        flag_individual[target2] = 1;
+//        printf("target1 = %d, target2 = %d\n", target1, target2);
+        int temp = rand() % 10;
+        gacrossover(target1, target2, &new_individual);
+        if(temp >= 0 && temp < 9) {}
+        else gamutation(&new_individual);
 
+        copy_individual(&individuals[length + i], &new_individual);
+
+//        gacrossover(target1, target2, &new_individual);
+//        gamutation(&new_individual);
+
+//        printf("ÐÂÉú³É»úÆ÷\n");
+//        for(int i = 0 ; i < m ; i ++){
+//            printf("µÚ%d¸ö»úÆ÷: ", i);
+//            for(iter = new_individual.machine[i].begin(); iter != new_individual.machine[i].end() ; iter ++){
+//                printf("%d ", (*iter));
+//            }
+//            printf("\n");
+//        }
+    }
 }
 
 void init(){
@@ -275,13 +351,13 @@ void init(){
     vector<int>::iterator iter;
     set<int>::iterator iiter;
     int tempkk;
-    for(int i = 0 ; i < pop ; i ++){
+    for(int i = 0 ; i < pop*2 ; i ++){
         flag_machine.clear();
         while(!segment.empty()){
             segment.pop();
         }
         for(int j = 0 ; j < n * 2 ; j ++){
-            int temp = int(rand() % n);
+            int temp = rand() % n;
             if(flag_machine.insert(temp).second){
                 segment.push(temp);
             }
@@ -294,10 +370,10 @@ void init(){
         interval.clear();
         kk = m - 1;
         while(kk){
-            int temp = int(rand() % (n));
+            int temp = rand() % (n);
             if(temp == 0) temp = 1;
             while(!interval.insert(temp).second){
-                temp = int(rand() % (n));
+                temp = rand() % (n);
                 if(temp == 0) temp = 1;
             }
             kk --;
@@ -344,6 +420,7 @@ void init(){
 //            }
 //            printf("\n");
 //        }
+//        printf("\n");
 //        getchar();
     }
 }
@@ -354,6 +431,8 @@ void solve(){
         init();
 
         make_new_pop(Collection, pop);
+
+
 
 
         for(int i = 0 ; i < pop ; i ++){
