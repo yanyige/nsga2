@@ -75,11 +75,12 @@ struct Individual{
     double communication_cost; //object 1
     double maxspan; //object 2
     int front; //rank of domination
-    vector< Individual > S; //the collections dominated by this Individual
+    vector< int > S; //the collections dominated by this Individual
     int n;// count of dominated solution
     double dfitness; //fitness
     double crowd_distance;
-}Collection[100], new_individual;
+}Collection[100], new_individual, temp_Collection[100];
+vector<Individual> Front[100];
 
 int cmp(const void *a, const void *b){
     return (*(Individual *)a).communication_cost > (*(Individual *)b).communication_cost ? 1:-1;
@@ -88,8 +89,11 @@ int cmp(const void *a, const void *b){
 void copy_individual(Individual *i, Individual *j){
     vector<int>:: iterator iter;
     for(int ii = 0 ; ii < m ; ii ++){
+        i->machine[ii].erase(i->machine[ii].begin(), i->machine[ii].end());
+    }
+    for(int ii = 0 ; ii < m ; ii ++){
         for(iter = j->machine[ii].begin(); iter != j->machine[ii].end(); ++ iter){
-            i->machine[ii].push_back(*iter);
+            i->machine[ii].push_back((*iter));
         }
     }
 }
@@ -127,12 +131,14 @@ void non_domination_sort(Individual individuals[], int length){
         individuals[i].S.erase(individuals[i].S.begin(), individuals[i].S.end());
         individuals[i].n = 0;
         for(int j = 0 ; j < length ; j ++){
-            // if individual[i] dominate individual[j]
-            if(individuals[i].maxspan < individuals[j].maxspan && individuals[i].communication_cost < individuals[j].communication_cost){
-                // let individual[j] added to the S of the individual[i]
-                individuals[i].S.push_back(individuals[j]);
-            }else if(individuals[j].maxspan < individuals[i].maxspan && individuals[j].communication_cost < individuals[i].communication_cost){
-                individuals[i].n = individuals[i].n + 1;
+            if(i!=j){
+                // if individual[i] dominate individual[j]
+                if(individuals[i].maxspan < individuals[j].maxspan && individuals[i].communication_cost < individuals[j].communication_cost){
+                    // let individual[j] added to the S of the individual[i]
+                    individuals[i].S.push_back(j);
+                }else if(individuals[j].maxspan < individuals[i].maxspan && individuals[j].communication_cost < individuals[i].communication_cost){
+                    individuals[i].n = individuals[i].n + 1;
+                }
             }
         }
     }
@@ -140,16 +146,19 @@ void non_domination_sort(Individual individuals[], int length){
         if(individuals[i].n == 0){
             individuals[i].front = rank;
             frontCollection.push_back(individuals[i]);
+            Front[rank].push_back(individuals[i]);
         }
     }
+
     while(!frontCollection.empty()){
         tempCollection.erase(tempCollection.begin(), tempCollection.end());
         for(vector<Individual>::iterator iter = frontCollection.begin() ; iter != frontCollection.end() ; ++iter){
-            for(vector<Individual>::iterator jter = (*iter).S.begin() ; jter != (*iter).S.end() ; ++jter){
-                (*jter).n = (*jter).n - 1;
-                if((*jter).n == 0){
-                    (*iter).front = rank + 1;
-                    tempCollection.push_back((*iter));
+            for(vector<int>::iterator jter = (*iter).S.begin() ; jter != (*iter).S.end() ; ++jter){
+                individuals[(*jter)].n = individuals[(*jter)].n - 1;
+                if(individuals[(*jter)].n == 0){
+                    individuals[(*jter)].front = rank + 1;
+                    Front[rank+1].push_back(individuals[(*jter)]);
+                    tempCollection.push_back(individuals[(*jter)]);
                 }
             }
         }
@@ -295,12 +304,12 @@ void gamutation(Individual *individual){
 }
 
 //计算拥挤距离
-void crowdDistance(Individual individuals[], int length){
+void crowdDistance(Individual individuals[], int length, double max_communication, double min_communication, double max_maxspn, double min_maxspan){
     qsort(individuals, length, sizeof(individuals[0]), cmp);
     individuals[0].crowd_distance = inf;
     individuals[length - 1].crowd_distance = inf;
     for(int i = 1 ; i < length - 1 ; i ++){
-        individuals[i].crowd_distance += individuals[i+1].communication_cost - individuals[i-1].communication_cost;
+        individuals[i].crowd_distance = individuals[i].crowd_distance + (individuals[i+1].communication_cost - individuals[i-1].communication_cost) / (max_communication - min_communication);
     }
 }
 
@@ -327,23 +336,26 @@ void make_new_pop(Individual individuals[], int length){
         if(temp >= 0 && temp < 9) {}
         else gamutation(&new_individual);
 
+//        printf("新生成机器11\n");
+//        for(int j = 0 ; j < m ; j ++){
+//            printf("第%d个机器: ", j);
+//            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end() ; iter ++){
+//                printf("%d ", (*iter));
+//            }
+//            printf("\n");
+//        }
+
         copy_individual(&individuals[length + i], &new_individual);
 
 //        gacrossover(target1, target2, &new_individual);
 //        gamutation(&new_individual);
 
-//        printf("新生成机器\n");
-//        for(int i = 0 ; i < m ; i ++){
-//            printf("第%d个机器: ", i);
-//            for(iter = new_individual.machine[i].begin(); iter != new_individual.machine[i].end() ; iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
+
     }
 }
 
 void init(){
+
     set<int> flag_machine;
     stack<int> segment;
     set<int> interval;
@@ -351,6 +363,11 @@ void init(){
     vector<int>::iterator iter;
     set<int>::iterator iiter;
     int tempkk;
+    for(int i = 0 ; i < pop*2 ; i ++){
+        for(int j = 0 ; j < m ; j ++){
+            Collection[i].machine[j].erase(Collection[i].machine[j].begin(), Collection[i].machine[j].end());
+        }
+    }
     for(int i = 0 ; i < pop*2 ; i ++){
         flag_machine.clear();
         while(!segment.empty()){
@@ -428,17 +445,42 @@ void init(){
 //Main Process
 void solve(){
     while(~scanf("%d", &pop)){
+
+        int P_size = 0;
+        int now_rank = 1;
+
         init();
 
         make_new_pop(Collection, pop);
 
-
-
-
-        for(int i = 0 ; i < pop ; i ++){
+        for(int i = 0 ; i < pop*2 ; i ++){
             evaluate_objective(&Collection[i]);
+        }
+
+        non_domination_sort(Collection, pop * 2);
+
+
+        while(1){
+            if(P_size + Front[now_rank].size() > pop){
+                break;
+            }
+            for(vector<Individual>::iterator iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++ iter){
+                Collection[P_size] = (*iter);
+                P_size ++;
+            }
+            now_rank ++;
+        }
+
+
+
+//        qsort(Collection, pop * 2, sizeof(Collection[0]), cmp);
+
+        for(int i = 0 ; i < pop*2 ; i ++){
+            evaluate_objective(&Collection[i]);
+            printf("i=%d\n", i);
             printf("maxspan = %.2lf\n", Collection[i].maxspan);
             printf("communicate = %.2lf\n", Collection[i].communication_cost);
+            printf("rank = %d\n", Collection[i].front);
         }
     }
 
