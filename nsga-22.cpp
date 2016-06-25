@@ -106,16 +106,26 @@ void copy_individual(Individual *i, Individual *j){
     }
 }
 
+double abs(double t){
+    return t>0?t:-t;
+}
+
 void evaluate_objective(Individual *i){
     vector<int>:: iterator iter;
     vector<int>:: iterator jter;
     i->n = inf;
     i->maxspan = 0;
     i->communication_cost = 0;
+    double avg = 0;
+    for(int j = 0 ; j < n ; j ++){
+        avg += t[0][j];
+    }
+    avg /= 14;
+    double span = 0;
     for(int j = 0 ; j < number_of_machines ; j ++){
-        double span = 0;
+        double tspan = 0;
         for(iter = i->machine[j].begin(); iter != i->machine[j].end(); ++ iter){
-            span += t[j][(*iter)];
+            tspan += t[j][(*iter)];
             for(int jj = 0 ; jj < number_of_machines ; jj ++){
                 if(jj != j){
                     for(jter = i->machine[jj].begin(); jter != i->machine[jj].end(); ++ jter){
@@ -123,13 +133,10 @@ void evaluate_objective(Individual *i){
                     }
                 }
             }
-
         }
-        if(span > i->maxspan){
-            i->maxspan = span;
-        }
+        span += abs(tspan - avg);
     }
-    i->dfitness = i->maxspan + i->communication_cost;
+    i->maxspan = span;
 }
 
 // ∑«÷ß≈‰≈≈–Ú
@@ -560,6 +567,7 @@ void solve(){
         init();
 
         while(t < gen){
+            printf("t=%d\n", t);
 
             int P_size = 0;
             int now_rank = 1;
