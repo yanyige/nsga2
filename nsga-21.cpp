@@ -79,11 +79,15 @@ struct Individual{
     int n;// count of dominated solution
     double dfitness; //fitness
     double crowd_distance;
-}Collection[100], new_individual, temp_Collection[100];
+}Collection[100], new_individual;
 vector<Individual> Front[100];
 
 int cmp(const void *a, const void *b){
     return (*(Individual *)a).communication_cost > (*(Individual *)b).communication_cost ? 1:-1;
+}
+
+int cmp1(const void *a, const void *b){
+    return (*(Individual *)a).maxspan > (*(Individual *)b).maxspan ? 1:-1;
 }
 
 void copy_individual(Individual *i, Individual *j){
@@ -303,13 +307,88 @@ void gamutation(Individual *individual){
 
 }
 
+double get_max_communication(int now_rank){
+    vector<Individual>::iterator iter;
+    double max_communication = -inf;
+    double this_communication;
+    for(iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++iter){
+        this_communication = (*iter).communication_cost;
+        if(max_communication < this_communication){
+            max_communication = this_communication;
+        }
+    }
+    return max_communication;
+}
+
+double get_min_communication(int now_rank){
+    vector<Individual>::iterator iter;
+    double min_communication = inf;
+    double this_communication;
+    for(iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++iter){
+        this_communication = (*iter).communication_cost;
+        if(min_communication > this_communication){
+            min_communication = this_communication;
+        }
+    }
+    return min_communication;
+}
+
+double get_max_maxspan(int now_rank){
+    vector<Individual>::iterator iter;
+    double max_maxspan = -inf;
+    double this_max_span;
+    for(iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++iter){
+        this_max_span = (*iter).communication_cost;
+        if(max_maxspan < this_max_span){
+            max_maxspan = this_max_span;
+        }
+    }
+    return max_maxspan;
+}
+
+double get_min_maxspan(int now_rank){
+    vector<Individual>::iterator iter;
+    double min_maxspan = inf;
+    double this_min_span;
+    for(iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++iter){
+        this_min_span = (*iter).communication_cost;
+        if(min_maxspan > this_min_span){
+            min_maxspan = this_min_span;
+        }
+    }
+    return min_maxspan;
+}
+
 //º∆À„”µº∑æ‡¿Î
-void crowdDistance(Individual individuals[], int length, double max_communication, double min_communication, double max_maxspn, double min_maxspan){
-    qsort(individuals, length, sizeof(individuals[0]), cmp);
-    individuals[0].crowd_distance = inf;
-    individuals[length - 1].crowd_distance = inf;
+void crowdDistance(int now_rank){
+    vector<Individual>::iterator iter;
+    Individual front_individuals[100];
+    int length = 0;
+    double max_communication = get_max_communication(now_rank);
+    double min_communication = get_min_communication(now_rank);
+    double max_maxspan = get_max_maxspan(now_rank);
+    double min_maxspan = get_min_maxspan(now_rank);
+    for(iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++ iter){
+        front_individuals[length] = (*iter);
+        length ++;
+    }
+    qsort(front_individuals, length, sizeof(front_individuals[0]), cmp);
+    front_individuals[0].crowd_distance = inf;
+    front_individuals[length - 1].crowd_distance = inf;
     for(int i = 1 ; i < length - 1 ; i ++){
-        individuals[i].crowd_distance = individuals[i].crowd_distance + (individuals[i+1].communication_cost - individuals[i-1].communication_cost) / (max_communication - min_communication);
+        front_individuals[i].crowd_distance = front_individuals[i].crowd_distance + (front_individuals[i+1].communication_cost - front_individuals[i-1].communication_cost) / (max_communication - min_communication);
+    }
+
+    qsort(front_individuals, length, sizeof(front_individuals[0]), cmp1);
+    front_individuals[0].crowd_distance = inf;
+    front_individuals[length - 1].crowd_distance = inf;
+    for(int i = 1 ; i < length - 1 ; i ++){
+        front_individuals[i].crowd_distance = front_individuals[i].crowd_distance + (front_individuals[i+1].maxspan - front_individuals[i-1].maxspan) / (max_communication - min_communication);
+    }
+
+    Front[now_rank].erase(Front[now_rank].begin(), Front[now_rank].end());
+    for(int i = 0 ; i < length ; i ++){
+        Front[now_rank].push_back(front_individuals[i]);
     }
 }
 
@@ -471,7 +550,17 @@ void solve(){
             now_rank ++;
         }
 
+        crowdDistance(now_rank);
 
+        while(1){
+            if(P_size > pop){
+                break;
+            }
+            for(vector<Individual>::iterator iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++ iter){
+                Collection[P_size] = (*iter);
+                P_size ++;
+            }
+        }
 
 //        qsort(Collection, pop * 2, sizeof(Collection[0]), cmp);
 
@@ -488,54 +577,7 @@ void solve(){
 }
 
 int main(){
-
-
-
     solve();
-//    printf("NSGA-II: Please enter the population size and number of generations as input arguments.\npopulation size: ");
-//    scanf("%d", &pop);
-//    printf("number of generations: ");
-//    scanf("%d", &gen);
-//
-//    printf("Input the number of objective: ");
-//    scanf("%d", &number_of_objectives);
-//    printf("Input the number of decision variables: ");
-//    scanf("%d", &number_of_decision_variables);
-//
-//    for(int i = 1; i <= number_of_decision_variables; i ++){
-//        printf("Input the minimum value for decision variable ");
-//        scanf("%d", min_range_of_decision_variable[i]);
-//        printf("Input the maximum value for decision variable ");
-//        scanf("%d", max_range_of_decision_variable[i]);
-//    }
-
-    //Initialize the population
-
-
-    //Sort the initialized population
-
-
-    //**test area
-    //**
-    //**
-//    int a[100] = {1};
-//    int b[100] = {1,2};
-//    int c[100] = {1,2,3};
-//    int d[100] = {1,2,3,4};
-//    vector<int> t(a,a+1);
-//    Individual test;
-//    test.machine.insert(test.machine.end(), t);
-//    t.erase(t.begin(), t.end());
-//    t.push_back(b[0]);t.push_back(b[1]);
-//    test.machine.insert(test.machine.end(), t);
-//    t.erase(t.begin(), t.end());
-//    t.push_back(c[0]);t.push_back(c[1]);t.push_back(c[2]);
-//    test.machine.insert(test.machine.end(), t);
-//    t.erase(t.begin(), t.end());
-//    t.push_back(d[0]);t.push_back(d[1]);t.push_back(d[2]);t.push_back(d[3]);
-//    test.machine.insert(test.machine.end(), t);
-//    evaluate_objective(&test);
-    //***********************************************************
     return 0;
 }
 
