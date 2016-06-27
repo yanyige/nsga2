@@ -52,6 +52,11 @@ double t[m][n] = {
     {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
     {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329}
 };
+struct time_table{
+    double time;
+    int id;
+}time_in_machine[n];
+
 double c[n][n] = {
          {0, 88, 64, 560, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
          {202, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -91,7 +96,11 @@ int cmp1(const void *a, const void *b){
 }
 
 int cmp2(const void *a, const void *b){
-    return (*(Individual *)a).crowd_distance < (*(Individual *)b).crowd_distance ? -1:1;
+    return (*(Individual *)a).crowd_distance > (*(Individual *)b).crowd_distance ? -1:1;
+}
+
+int cmp3(const void *a, const void *b){
+    return (*(time_table *)a).time > (*(time_table *)b).time ? -1 : 1;
 }
 
 void copy_individual(Individual *i, Individual *j){
@@ -120,7 +129,7 @@ void evaluate_objective(Individual *i){
     for(int j = 0 ; j < n ; j ++){
         avg += t[0][j];
     }
-    avg /= 14;
+    avg /= 8;
     double span = 0;
     for(int j = 0 ; j < number_of_machines ; j ++){
         double tspan = 0;
@@ -137,6 +146,23 @@ void evaluate_objective(Individual *i){
         span += abs(tspan - avg);
     }
     i->maxspan = span;
+
+//    for(int j = 0 ; j < number_of_machines ; j ++){
+//        double tspan = 0;
+//        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); ++ iter){
+//            tspan += t[j][(*iter)];
+//            for(int jj = 0 ; jj < number_of_machines ; jj ++){
+//                if(jj != j){
+//                    for(vector<int>::iterator jter = Collection[1].machine[jj].begin(); jter != Collection[1].machine[jj].end(); ++ jter){
+//                        Collection[1].communication_cost += c[(*iter)][(*jter)];
+//                    }
+//                }
+//            }
+//        }
+//        printf("tspan = %.2lf\n", tspan);
+//        span += abs(tspan - avg);
+//    }
+//    i->maxspan = span;
 }
 
 // ·ÇÖ§ÅäÅÅÐò
@@ -214,23 +240,6 @@ void gacrossover(int target1, int target2, Individual *individual){//½«Ñ¡ÔñµÄÁ½¸
 }
 
 void light_perturbation(int segment[], int size_of_segment, int interval[]){
-//    int temp, k, pos1, pos2;
-//    temp = rand() % m;
-//    k = 0;
-//    for(int i = 0 ; i <= temp ; ++ i){
-//        k += interval[i];
-//    }
-//    if(k == 0 || k == 1) k = 2;
-//    pos1 = rand() % k;
-//    pos2 = k + (rand() % (size_of_segment - k));
-//
-//
-//    temp = segment[pos1];
-//    for(int i = pos1 ; i < pos2 ; i ++){
-//        segment[i] = segment[i + 1];
-//    }
-//    segment[pos2] = temp;
-
     int temp, k, pos1, pos2, temp1;
     int interval1[MAXN];
     interval1[0] = interval[0];
@@ -469,6 +478,162 @@ void make_new_pop(Individual individuals[], int length){
     }
 }
 
+double get_min_time_in_array(double arr[]){
+    double min_time = inf;
+    int min_id;
+    for(int i = 0 ; i < m ; i ++){
+        if(min_time > arr[i]){
+            min_time = arr[i];
+            min_id = i;
+        }
+    }
+    return min_time;
+}
+
+double get_min_id_in_array(double arr[]){
+    double min_time = inf;
+    int min_id;
+    for(int i = 0 ; i < m ; i ++){
+        if(min_time > arr[i]){
+            min_time = arr[i];
+            min_id = i;
+        }
+    }
+    return min_id;
+}
+
+void greedy_for_workload(){
+    double now_span[MAXN];
+    memset(now_span, 0, sizeof(now_span));
+    for(int i = 0 ; i < n ; i ++){
+        time_in_machine[i].id = i;
+        time_in_machine[i].time = t[0][i];
+    }
+    qsort(time_in_machine, n, sizeof(time_in_machine[0]), cmp3);
+    for(int i = 0 ; i < n ; i ++){
+        if(i >= 0 && i < m){
+            Collection[0].machine[i].push_back(time_in_machine[i].id);
+            now_span[i] += time_in_machine[i].time;
+        }else{
+            int pos = get_min_id_in_array(now_span);
+            Collection[0].machine[pos].push_back(time_in_machine[i].id);
+            now_span[pos] += time_in_machine[i].time;
+        }
+    }
+}
+
+int father[MAXN];
+/* rank[x]±íÊ¾xµÄÖÈ */
+int rank[MAXN];
+/* ³õÊ¼»¯¼¯ºÏ */
+void Make_Set(int x)
+{
+	father[x] = x;
+	rank[x] = 0;
+}
+/* ²éÕÒxÔªËØËùÔÚµÄ¼¯ºÏ,»ØËÝÊ±Ñ¹ËõÂ·¾¶ */
+int Find_Set(int x)
+{
+	if (x != father[x])
+	{
+		father[x] = Find_Set(father[x]);
+	}
+	return father[x];
+}
+/* °´ÖÈºÏ²¢x,yËùÔÚµÄ¼¯ºÏ */
+void Union(int x, int y)
+{
+	x = Find_Set(x);
+	y = Find_Set(y);
+	if (x == y) return;
+	if (rank[x] > rank[y])
+	{
+		father[y] = x;
+	}
+	else
+	{
+		if (rank[x] == rank[y])
+		{
+			rank[y]++;
+		}
+		father[x] = y;
+	}
+}
+
+void greedy_for_communication(){
+//    vector<int>::iterator iter;
+//    bool flag;
+//    int machine_number[MAXN];
+//    memset(machine_number, 0, sizeof(machine_number));
+//    for(int i = 0 ; i < n ; i ++){
+//        flag = false;
+//        for(int j = 0 ; j < m ; j ++){
+//            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); ++ iter){
+//                if(c[i][(*iter)] > 0){
+//                    Collection[1].machine[j].push_back(i);
+//                    flag = true;
+//                    break;
+//                }
+//            }
+//            if(flag) break;
+//        }
+//        if(!flag){
+//            int pos;
+//            int minn = inf;
+//            for(int k = 0 ; k < m ; k ++){
+//                if(machine_number[k] < minn){
+//                    minn = machine_number[k];
+//                    pos = k;
+//                }
+//            }
+//            Collection[1].machine[pos].push_back(i);
+//        }
+//    }
+    Collection[1].machine[0].push_back(5);
+    Collection[1].machine[1].push_back(0);
+    Collection[1].machine[1].push_back(4);
+    Collection[1].machine[2].push_back(2);
+    Collection[1].machine[2].push_back(3);
+    Collection[1].machine[2].push_back(6);
+    Collection[1].machine[3].push_back(9);
+    Collection[1].machine[3].push_back(12);
+    Collection[1].machine[4].push_back(1);
+    Collection[1].machine[4].push_back(13);
+    Collection[1].machine[5].push_back(10);
+    Collection[1].machine[6].push_back(7);
+    Collection[1].machine[7].push_back(8);
+    Collection[1].machine[7].push_back(11);
+
+//    double span = 0;
+//    for(int j = 0 ; j < number_of_machines ; j ++){
+//        double tspan = 0;
+//        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); ++ iter){
+//            tspan += t[j][(*iter)];
+//            for(int jj = 0 ; jj < number_of_machines ; jj ++){
+//                if(jj != j){
+//                    for(vector<int>::iterator jter = Collection[1].machine[jj].begin(); jter != Collection[1].machine[jj].end(); ++ jter){
+//                        Collection[1].communication_cost += c[(*iter)][(*jter)];
+//                    }
+//                }
+//            }
+//        }
+//        printf("tspan = %.2lf\n", tspan);
+//        span += abs(tspan - avg);
+//    }
+//    evaluate_objective(&Collection[1]);
+//    printf("span = %.2lf\n", Collection[1].maxspan);
+//    printf("comm = %.2lf\n", Collection[1].communication_cost);
+//    for(int j = 0 ; j < m ; j ++){
+//        printf("µÚ%dÌ¨»úÆ÷µÄÐòÁÐ", j);
+//        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); iter ++){
+//            printf("%d ", (*iter));
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+//    getchar();getchar();
+}
+
 void init(){
 
     set<int> flag_machine;
@@ -483,6 +648,10 @@ void init(){
             Collection[i].machine[j].erase(Collection[i].machine[j].begin(), Collection[i].machine[j].end());
         }
     }
+
+    greedy_for_workload();
+    greedy_for_communication();
+
     for(int i = 0 ; i < pop*2 ; i ++){
 
         flag_machine.clear();
