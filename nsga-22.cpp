@@ -561,48 +561,52 @@ void Union(int x, int y)
 }
 
 void greedy_for_communication(){
-//    vector<int>::iterator iter;
-//    bool flag;
-//    int machine_number[MAXN];
-//    memset(machine_number, 0, sizeof(machine_number));
-//    for(int i = 0 ; i < n ; i ++){
-//        flag = false;
-//        for(int j = 0 ; j < m ; j ++){
-//            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); ++ iter){
-//                if(c[i][(*iter)] > 0){
-//                    Collection[1].machine[j].push_back(i);
-//                    flag = true;
-//                    break;
-//                }
-//            }
-//            if(flag) break;
-//        }
-//        if(!flag){
-//            int pos;
-//            int minn = inf;
-//            for(int k = 0 ; k < m ; k ++){
-//                if(machine_number[k] < minn){
-//                    minn = machine_number[k];
-//                    pos = k;
-//                }
-//            }
-//            Collection[1].machine[pos].push_back(i);
-//        }
-//    }
-    Collection[1].machine[0].push_back(5);
-    Collection[1].machine[1].push_back(0);
-    Collection[1].machine[1].push_back(4);
-    Collection[1].machine[2].push_back(2);
-    Collection[1].machine[2].push_back(3);
-    Collection[1].machine[2].push_back(6);
-    Collection[1].machine[3].push_back(9);
-    Collection[1].machine[3].push_back(12);
-    Collection[1].machine[4].push_back(1);
-    Collection[1].machine[4].push_back(13);
-    Collection[1].machine[5].push_back(10);
-    Collection[1].machine[6].push_back(7);
-    Collection[1].machine[7].push_back(8);
-    Collection[1].machine[7].push_back(11);
+    vector<int>::iterator iter;
+    bool flag;
+    int machine_number[MAXN];
+    memset(machine_number, 0, sizeof(machine_number));
+    int max_number = n / m;
+    for(int i = 0 ; i < n ; i ++){
+        flag = false;
+        for(int j = 0 ; j < m ; j ++){
+            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); ++ iter){
+
+                if(c[i][(*iter)] > 0 && machine_number[j] <= max_number){
+                    Collection[1].machine[j].push_back(i);
+                    machine_number[j] ++;
+                    flag = true;
+                    break;
+                }
+            }
+            if(flag) break;
+        }
+        if(!flag){
+            int pos;
+            int minn = inf;
+            for(int k = 0 ; k < m ; k ++){
+                if(machine_number[k] < minn && machine_number[k] <= max_number){
+                    minn = machine_number[k];
+                    pos = k;
+                }
+            }
+            Collection[1].machine[pos].push_back(i);
+            machine_number[pos] ++;
+        }
+    }
+//    Collection[1].machine[0].push_back(5);
+//    Collection[1].machine[1].push_back(0);
+//    Collection[1].machine[1].push_back(4);
+//    Collection[1].machine[2].push_back(2);
+//    Collection[1].machine[2].push_back(3);
+//    Collection[1].machine[2].push_back(6);
+//    Collection[1].machine[3].push_back(9);
+//    Collection[1].machine[3].push_back(12);
+//    Collection[1].machine[4].push_back(1);
+//    Collection[1].machine[4].push_back(13);
+//    Collection[1].machine[5].push_back(10);
+//    Collection[1].machine[6].push_back(7);
+//    Collection[1].machine[7].push_back(8);
+//    Collection[1].machine[7].push_back(11);
 
 //    double span = 0;
 //    for(int j = 0 ; j < number_of_machines ; j ++){
@@ -620,18 +624,18 @@ void greedy_for_communication(){
 //        printf("tspan = %.2lf\n", tspan);
 //        span += abs(tspan - avg);
 //    }
-//    evaluate_objective(&Collection[1]);
-//    printf("span = %.2lf\n", Collection[1].maxspan);
-//    printf("comm = %.2lf\n", Collection[1].communication_cost);
-//    for(int j = 0 ; j < m ; j ++){
-//        printf("第%d台机器的序列", j);
-//        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); iter ++){
-//            printf("%d ", (*iter));
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
-//    getchar();getchar();
+    evaluate_objective(&Collection[1]);
+    printf("span = %.2lf\n", Collection[1].maxspan);
+    printf("comm = %.2lf\n", Collection[1].communication_cost);
+    for(int j = 0 ; j < m ; j ++){
+        printf("第%d台机器的序列", j);
+        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); iter ++){
+            printf("%d ", (*iter));
+        }
+        printf("\n");
+    }
+    printf("\n");
+    getchar();getchar();
 }
 
 void init(){
