@@ -92,7 +92,7 @@ int cmp(const void *a, const void *b){
 }
 
 int cmp1(const void *a, const void *b){
-    return (*(Individual *)a).maxspan < (*(Individual *)b).maxspan ? 1:-1;
+    return (*(Individual *)a).maxspan > (*(Individual *)b).maxspan ? 1:-1;
 }
 
 int cmp2(const void *a, const void *b){
@@ -429,6 +429,11 @@ void crowdDistance(int now_rank){
     }
 
     qsort(front_individuals, length, sizeof(front_individuals[0]), cmp2);
+//    printf("*************\n");
+//    for(int i = 0 ; i < n ; i ++){
+//        printf("distance = %.2lf\n", front_individuals[i].crowd_distance);
+//    }
+//    printf("*************\n");
     Front[now_rank].erase(Front[now_rank].begin(), Front[now_rank].end());
     for(int i = 0 ; i < length ; i ++){
         Front[now_rank].push_back(front_individuals[i]);
@@ -624,18 +629,18 @@ void greedy_for_communication(){
 //        printf("tspan = %.2lf\n", tspan);
 //        span += abs(tspan - avg);
 //    }
-    evaluate_objective(&Collection[1]);
-    printf("span = %.2lf\n", Collection[1].maxspan);
-    printf("comm = %.2lf\n", Collection[1].communication_cost);
-    for(int j = 0 ; j < m ; j ++){
-        printf("第%d台机器的序列", j);
-        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); iter ++){
-            printf("%d ", (*iter));
-        }
-        printf("\n");
-    }
-    printf("\n");
-    getchar();getchar();
+//    evaluate_objective(&Collection[1]);
+//    printf("span = %.2lf\n", Collection[1].maxspan);
+//    printf("comm = %.2lf\n", Collection[1].communication_cost);
+//    for(int j = 0 ; j < m ; j ++){
+//        printf("第%d台机器的序列", j);
+//        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); iter ++){
+//            printf("%d ", (*iter));
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+//    getchar();getchar();
 }
 
 void init(){
@@ -656,7 +661,7 @@ void init(){
     greedy_for_workload();
     greedy_for_communication();
 
-    for(int i = 0 ; i < pop*2 ; i ++){
+    for(int i = 2 ; i < pop*2 ; i ++){
 
         flag_machine.clear();
         while(!segment.empty()){
@@ -788,7 +793,7 @@ void solve(){
         for(int i = 0 ; i < pop ; i ++){
 
             printf("i=%d\n", i);
-            printf("maxspan = %.2lf\n", Collection[i].maxspan);
+            printf("****maxspan = %.2lf\n", Collection[i].maxspan);
             printf("communicate = %.2lf\n", Collection[i].communication_cost);
             printf("rank = %d\n", Collection[i].front);
         }
@@ -796,6 +801,7 @@ void solve(){
 }
 
 int main(){
+    srand(3);
     solve();
     return 0;
 }
