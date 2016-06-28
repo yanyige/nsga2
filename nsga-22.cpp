@@ -598,20 +598,20 @@ void greedy_for_communication(){
             machine_number[pos] ++;
         }
     }
-//    Collection[1].machine[0].push_back(5);
-//    Collection[1].machine[1].push_back(0);
-//    Collection[1].machine[1].push_back(4);
-//    Collection[1].machine[2].push_back(2);
-//    Collection[1].machine[2].push_back(3);
-//    Collection[1].machine[2].push_back(6);
-//    Collection[1].machine[3].push_back(9);
-//    Collection[1].machine[3].push_back(12);
-//    Collection[1].machine[4].push_back(1);
-//    Collection[1].machine[4].push_back(13);
-//    Collection[1].machine[5].push_back(10);
-//    Collection[1].machine[6].push_back(7);
-//    Collection[1].machine[7].push_back(8);
-//    Collection[1].machine[7].push_back(11);
+//        Collection[1].machine[0].push_back(5);
+//        Collection[1].machine[1].push_back(2);
+//        Collection[1].machine[1].push_back(3);
+//        Collection[1].machine[1].push_back(6);
+//        Collection[1].machine[2].push_back(1);
+//        Collection[1].machine[2].push_back(10);
+//        Collection[1].machine[2].push_back(0);
+//        Collection[1].machine[3].push_back(4);
+//        Collection[1].machine[4].push_back(13);
+//        Collection[1].machine[5].push_back(8);
+//        Collection[1].machine[5].push_back(11);
+//        Collection[1].machine[6].push_back(7);
+//        Collection[1].machine[7].push_back(9);
+//        Collection[1].machine[7].push_back(12);
 
 //    double span = 0;
 //    for(int j = 0 ; j < number_of_machines ; j ++){
@@ -740,12 +740,11 @@ void init(){
 
 //Main Process
 void solve(){
-    while(~scanf("%d%d", &pop, &gen)){
+    scanf("%d%d", &pop, &gen);
         int t = 0;
         init();
 
         while(t < gen){
-            printf("t=%d\n", t);
 
             int P_size = 0;
             int now_rank = 1;
@@ -791,17 +790,15 @@ void solve(){
             t ++;
         }
         for(int i = 0 ; i < pop ; i ++){
-
-            printf("i=%d\n", i);
-            printf("****maxspan = %.2lf\n", Collection[i].maxspan);
-            printf("communicate = %.2lf\n", Collection[i].communication_cost);
-            printf("rank = %d\n", Collection[i].front);
+            printf("[%.2lf,", Collection[i].maxspan);
+            printf("%.2lf],", Collection[i].communication_cost);
         }
-    }
+
 }
 
 int main(){
-    srand(3);
+    srand(1);
+    freopen("sample1.txt", "w", stdout);
     solve();
     return 0;
 }
