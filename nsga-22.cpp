@@ -10,8 +10,8 @@
 using namespace std;
 
 const int MAXN = 2000;
-const int number_of_tasks = 14;
-const int number_of_machines = 8;
+const int number_of_tasks = 294;
+const int number_of_machines = 64;
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
@@ -28,7 +28,6 @@ int pop, gen;
 //**min_range_of_decision_variable[] - minimum possible value for each decision variable
 //**max_range_of_decision_variable[] - maximum possible value for each decision variable
 
-int number_of_objectives, number_of_decision_variables, min_range_of_decision_variable[MAXN], max_range_of_decision_variable[MAXN];
 //int n, m;
 
 
@@ -42,37 +41,13 @@ int number_of_objectives, number_of_decision_variables, min_range_of_decision_va
 //**t(m,n) Execution time of a task on a processor
 //**c(m,n) Communication cost between two tasks
 
-double t[m][n] = {
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329},
-    {9843,6082,13221,1937,10288,22144,981,17759,5699,5687,10329,10329,10329,10329}
-};
+double t[m][n];
 struct time_table{
     double time;
     int id;
 }time_in_machine[n];
 
-double c[n][n] = {
-         {0, 88, 64, 560, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-         {202, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
- 	     {128, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	     {0, 0, 512, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	     {62, 64, 296, 0, 0, 521, 61, 515, 4, 4, 164, 164, 164, 164},
-	     {0, 176, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	     {8, 0, 4, 0, 4, 4, 0, 76, 0, 0, 0, 0, 0, 0},
-	     {4, 0, 0, 0, 0, 260, 16, 0, 560, 560, 147, 147, 147, 147},
-	     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 768, 768, 0, 0},
-	     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 768, 768},
-	     {0, 0, 0, 0, 0, 266, 0, 264, 0, 0, 0, 0, 0, 0},
-         {0, 0, 0, 0, 0, 64, 0, 72, 0, 0, 0, 0, 0, 0},
-	     {0, 0, 0, 0, 0, 266, 0, 264, 0, 0, 0, 0, 0, 0},
-	     {0, 0, 0, 0, 0, 64, 0, 72, 0, 0, 0, 0, 0, 0}
-};
+double c[n][n];
 bool uesd[MAXN];
 
 struct Individual{
@@ -129,7 +104,7 @@ void evaluate_objective(Individual *i){
     for(int j = 0 ; j < n ; j ++){
         avg += t[0][j];
     }
-    avg /= 8;
+    avg /= m;
     double span = 0;
     for(int j = 0 ; j < number_of_machines ; j ++){
         double tspan = 0;
@@ -403,6 +378,7 @@ double get_min_maxspan(int now_rank){
 
 //¼ÆËãÓµ¼·¾àÀë
 void crowdDistance(int now_rank){
+    printf("***3\n");
     vector<Individual>::iterator iter;
     Individual front_individuals[MAXN];
     int length = 0;
@@ -414,13 +390,13 @@ void crowdDistance(int now_rank){
         front_individuals[length] = (*iter);
         length ++;
     }
+    printf("length = %d\n", length);
     qsort(front_individuals, length, sizeof(front_individuals[0]), cmp);
     front_individuals[0].crowd_distance = inf;
     front_individuals[length - 1].crowd_distance = inf;
     for(int i = 1 ; i < length - 1 ; i ++){
         front_individuals[i].crowd_distance = front_individuals[i].crowd_distance + (front_individuals[i+1].communication_cost - front_individuals[i-1].communication_cost) / (max_communication - min_communication);
     }
-
     qsort(front_individuals, length, sizeof(front_individuals[0]), cmp1);
     front_individuals[0].crowd_distance = inf;
     front_individuals[length - 1].crowd_distance = inf;
@@ -740,46 +716,59 @@ void init(){
 
 //Main Process
 void solve(){
-    while(~scanf("%d%d", &pop, &gen)){
-        int t = 0;
-        init();
 
-        while(t < gen){
-            printf("t=%d\n", t);
+    scanf("%d%d", &pop, &gen);
+    for(int i = 0 ; i < m ; i ++){
+        for(int j = 0 ; j < n ; j ++){
+            scanf("%lf", &t[i][j]);
+        }
+    }
+    for(int i = 0 ; i < n ; i ++){
+        for(int j = 0 ; j < n ; j ++){
+            scanf("%lf", &c[i][j]);
+        }
+    }
 
-            int P_size = 0;
-            int now_rank = 1;
 
-            make_new_pop(Collection, pop);
+    int t = 0;
+    init();
 
-            for(int i = 0 ; i < pop*2 ; i ++){
-                evaluate_objective(&Collection[i]);
+    while(t < gen){
+        printf("t=%d\n", t);
+
+        int P_size = 0;
+        int now_rank = 1;
+
+        make_new_pop(Collection, pop);
+
+        for(int i = 0 ; i < pop*2 ; i ++){
+            evaluate_objective(&Collection[i]);
+        }
+
+        non_domination_sort(Collection, pop * 2);
+        printf("****1\n");
+        while(1){
+                printf("p_size = %d now_rank=%d Front[now_rank].size=%d\n", P_size, now_rank, Front[now_rank].size());
+            if(P_size + Front[now_rank].size() > pop){
+                break;
             }
-
-            non_domination_sort(Collection, pop * 2);
-
-            while(1){
-                if(P_size + Front[now_rank].size() > pop){
-                    break;
-                }
-                for(vector<Individual>::iterator iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++ iter){
-                    Collection[P_size] = (*iter);
-                    P_size ++;
-                }
-                now_rank ++;
+            for(vector<Individual>::iterator iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++ iter){
+                Collection[P_size] = (*iter);
+                P_size ++;
             }
-
-            crowdDistance(now_rank);
-
-            while(1){
-                if(P_size > pop){
-                    break;
-                }
-                for(vector<Individual>::iterator iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++ iter){
-                    Collection[P_size] = (*iter);
-                    P_size ++;
-                }
+            now_rank ++;
+        }
+        printf("****2\n");
+        crowdDistance(now_rank);
+        while(1){
+            if(P_size > pop){
+                break;
             }
+            for(vector<Individual>::iterator iter = Front[now_rank].begin(); iter != Front[now_rank].end(); ++ iter){
+                Collection[P_size] = (*iter);
+                P_size ++;
+            }
+        }
 
 //            for(int i = 0 ; i < pop*2 ; i ++){
 //                evaluate_objective(&Collection[i]);
@@ -788,23 +777,20 @@ void solve(){
 //                printf("communicate = %.2lf\n", Collection[i].communication_cost);
 //                printf("rank = %d\n", Collection[i].front);
 //            }
-            t ++;
-        }
-        for(int i = 0 ; i < pop ; i ++){
+        t ++;
+    }
+    for(int i = 0 ; i < pop ; i ++){
 
-            printf("i=%d\n", i);
-            printf("****maxspan = %.2lf\n", Collection[i].maxspan);
-            printf("communicate = %.2lf\n", Collection[i].communication_cost);
-            printf("rank = %d\n", Collection[i].front);
-        }
+        printf("[");
+        printf("%.2lf,", Collection[i].maxspan);
+        printf("%.2lf,rank=%d", Collection[i].communication_cost, Collection[i].front);
+        printf("],", Collection[i].front);
     }
 }
 
 int main(){
     srand(3);
+    freopen("in.txt", "r", stdin);
     solve();
     return 0;
 }
-
-
-
