@@ -11,7 +11,8 @@ int main(){
     }
 
     for(int i = 0 ; i < 14 ; i ++){
-        for(int j = 0 ; j < 14 ; j ++){
+        for(int j = 0 ; j < 14
+         ; j ++){
             printf("%lf ", test[i%14][j%14]);
         }
     }
