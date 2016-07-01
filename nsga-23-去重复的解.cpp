@@ -57,10 +57,21 @@ struct Individual{
     int front; //rank of domination
     vector< int > S; //the collections dominated by this Individual
     int n;// count of dominated solution
-    double dfitness; //fitness
     double crowd_distance;
 }Collection[MAXN], new_individual;
 vector<Individual> Front[MAXN];
+
+bool operator<(const Individual& lhs, const Individual& rhs) {
+    if(lhs.front!=rhs.front) return lhs.front<rhs.front;
+    else{
+        if(lhs.communication_cost != rhs.communication_cost) return lhs.communication_cost < rhs.communication_cost;
+        else{
+            return lhs.maxspan < lhs.maxspan;
+        }
+    }
+}
+set<Individual> solution; //外部种群
+set<Individual> judgeRepeat; //判断个体是否重复
 
 int cmp(const void *a, const void *b){
     return (*(Individual *)a).communication_cost > (*(Individual *)b).communication_cost ? 1:-1;
@@ -78,17 +89,17 @@ int cmp3(const void *a, const void *b){
     return (*(time_table *)a).time > (*(time_table *)b).time ? -1 : 1;
 }
 
-void copy_individual(Individual *i, Individual *j){
-    vector<int>:: iterator iter;
-    for(int ii = 0 ; ii < m ; ii ++){
-        i->machine[ii].erase(i->machine[ii].begin(), i->machine[ii].end());
-    }
-    for(int ii = 0 ; ii < m ; ii ++){
-        for(iter = j->machine[ii].begin(); iter != j->machine[ii].end(); ++ iter){
-            i->machine[ii].push_back((*iter));
-        }
-    }
-}
+//void copy_individual(Individual *i, Individual *j){
+//    vector<int>:: iterator iter;
+//    for(int ii = 0 ; ii < m ; ii ++){
+//        i->machine[ii].erase(i->machine[ii].begin(), i->machine[ii].end());
+//    }
+//    for(int ii = 0 ; ii < m ; ii ++){
+//        for(iter = j->machine[ii].begin(); iter != j->machine[ii].end(); ++ iter){
+//            i->machine[ii].push_back((*iter));
+//        }
+//    }
+//}
 
 double abs(double t){
     return t>0?t:-t;
@@ -97,7 +108,9 @@ double abs(double t){
 void evaluate_objective(Individual *i){
     vector<int>:: iterator iter;
     vector<int>:: iterator jter;
-    i->n = inf;
+
+//    i->n = inf;
+
     i->maxspan = 0;
     i->communication_cost = 0;
     double avg = 0;
@@ -425,27 +438,62 @@ void crowdDistance(int now_rank){
 void make_new_pop(Individual individuals[], int length){
 
     vector<int>::iterator iter;
-    int flag_individual[MAXN]; //标记这个个体是否被选择过
-    //tournament_selection
+    int flag_individual[200][200]; //标记这个个体是否被选择过
     memset(flag_individual, 0, sizeof(flag_individual)); //初始全部未被选择
     for(int i = 0 ; i < length ; i ++){
-        int target1 = rand() % ((length<<1));
-        while(flag_individual[target1] != 0){
-            target1 = rand() % ((length<<1));
-        }
-        flag_individual[target1] = 1;
-        int target2 = rand() % ((length<<1));
-        while(flag_individual[target2] != 0){
-            target2 = rand() % ((length<<1));
+//        printf("i = %d\n", i);
+        int target1 = rand() % ((length));
+        int target2 = rand() % ((length));
+        while(target2 == target1){
+            target2 = rand() % ((length));
         } //随机选择两个目标
-        flag_individual[target2] = 1;
+        while(flag_individual[target1][target2]){
+            target1 = rand() % ((length));
+            target2 = rand() % ((length));
+            while(target2 == target1){
+                target2 = rand() % ((length));
+            } //随机选择两个目标
+        }
+        flag_individual[target1][target2] = flag_individual[target2][target1] = 1;
 //        printf("target1 = %d, target2 = %d\n", target1, target2);
         int temp = rand() % 10;
         gacrossover(target1, target2, &new_individual);
-
-        if(temp >= 0 && temp < 9) {}
+        if(temp >= 0 && temp < 7) {}
         else {
             gamutation(&new_individual);
+        }
+        evaluate_objective(&new_individual);
+        /* ****************** */
+//        for(int j = 0 ; j < m ; j ++){
+//            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end(); ++iter){
+//                printf(" %d", *iter);
+//            }
+//        }
+//        printf("\n");
+        /* * ***************** */
+        /* ***judge repeat */
+//        printf("judge repeat\n");
+//        for(set<Individual>::iterator iiiter = judgeRepeat.begin(); iiiter != judgeRepeat.end(); ++ iiiter){
+//            printf("一台机器\n");
+//            for(int j = 0 ; j < m ; j ++){
+//                for(iter = (*iiiter).machine[j].begin(); iter != (*iiiter).machine[j].end(); ++iter){
+//                    printf(" %d", *iter);
+//                }
+//            }
+//        }
+//        printf("judge repeat end");
+//        printf("\n");
+       /* ******/
+        while((judgeRepeat.insert(new_individual).second) == 0){
+
+            gacrossover(target1, target2, &new_individual);
+            int temp = rand() % 10;
+            if(temp >= 0 && temp < 9) {}
+            else {
+                gamutation(&new_individual);
+            }
+            evaluate_objective(&new_individual);
+//            printf("com = %.2lf maxspan = %.2lf\n", new_individual.communication_cost, new_individual.maxspan);
         }
 //        printf("新生成机器11\n");
 //        for(int j = 0 ; j < m ; j ++){
@@ -455,12 +503,9 @@ void make_new_pop(Individual individuals[], int length){
 //            }
 //            printf("\n");
 //        }
-        copy_individual(&individuals[length + i], &new_individual);
 
-//        gacrossover(target1, target2, &new_individual);
-//        gamutation(&new_individual);
-
-
+//        copy_individual(&individuals[length + i], &new_individual);
+          individuals[length+i] = new_individual;
     }
 }
 
@@ -683,9 +728,11 @@ void init(){
 //            printf("interval中的值=%d\n", (*iiter));
             if(iiter == interval.begin()){
                 kk = (*iiter);
-            }else{
 //                printf("intervar=%d kk=%d\n", (*iiter), kk);
+            }else{
+
                 kk = (*iiter) - kk;
+//                printf("intervar=%d kk=%d\n", (*iiter), kk);
             }
 //            kk = (*iiter);
 //            printf("区间大小1=%d\n", kk);
@@ -715,7 +762,6 @@ void init(){
 //            printf("\n");
 //        }
 //        printf("\n");
-//        getchar();
     }
 }
 
@@ -737,6 +783,19 @@ void solve(){
 
     int t = 0;
     init();
+
+    for(int i = 0 ; i < pop*2 ; i ++){
+        evaluate_objective(&Collection[i]);
+    }
+    non_domination_sort(Collection, pop * 2);
+    for(int i = 0 ; i < pop*2 ; i ++){
+        if(Collection[i].front == 1){
+            solution.insert(Collection[i]);
+        }
+        judgeRepeat.insert(Collection[i]);
+    }
+
+
 
     while(t < gen){
         printf("t=%d\n", t);
@@ -805,7 +864,7 @@ void solve(){
 int main(){
     srand(1);
     freopen("in.txt", "r", stdin);
-    freopen("out3.txt", "w", stdout);
+//    freopen("out3.txt", "w", stdout);
     solve();
     return 0;
 }
