@@ -389,7 +389,6 @@ void crowdDistance(int now_rank){
         front_individuals[length] = (*iter);
         length ++;
     }
-    printf("length = %d\n", length);
     qsort(front_individuals, length, sizeof(front_individuals[0]), cmp);
     front_individuals[0].crowd_distance = inf;
     front_individuals[length - 1].crowd_distance = inf;
@@ -789,6 +788,7 @@ void solve(){
             printf("%.2lf,", Collection[i].maxspan);
             printf("%.2lf", Collection[i].communication_cost, Collection[i].front);
             printf("],", Collection[i].front);
+            printf("\n");
             tot ++;
 //        }
     }

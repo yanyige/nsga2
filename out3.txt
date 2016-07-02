@@ -1,501 +1,101 @@
-length = 11
-length = 12
-length = 21
-length = 27
-length = 23
-length = 15
-length = 15
-length = 23
-length = 18
-length = 18
-length = 15
-length = 28
-length = 24
-length = 21
-length = 17
-length = 24
-length = 23
-length = 16
-length = 33
-length = 37
-length = 33
-length = 25
-length = 28
-length = 21
-length = 38
-length = 34
-length = 37
-length = 24
-length = 64
-length = 62
-length = 49
-length = 53
-length = 62
-length = 60
-length = 62
-length = 51
-length = 42
-length = 106
-length = 124
-length = 125
-length = 63
-length = 127
-length = 132
-length = 121
-length = 111
-length = 99
-length = 84
-length = 73
-length = 64
-length = 48
-length = 53
-length = 103
-length = 118
-length = 121
-length = 121
-length = 113
-length = 122
-length = 128
-length = 121
-length = 120
-length = 113
-length = 106
-length = 115
-length = 118
-length = 121
-length = 119
-length = 114
-length = 120
-length = 124
-length = 123
-length = 113
-length = 112
-length = 107
-length = 111
-length = 115
-length = 117
-length = 121
-length = 122
-length = 117
-length = 125
-length = 125
-length = 127
-length = 123
-length = 118
-length = 122
-length = 120
-length = 120
-length = 112
-length = 121
-length = 121
-length = 119
-length = 114
-length = 116
-length = 114
-length = 114
-length = 117
-length = 118
-length = 113
-length = 116
-length = 102
-length = 123
-length = 126
-length = 132
-length = 131
-length = 129
-length = 132
-length = 55
-length = 119
-length = 121
-length = 116
-length = 64
-length = 40
-length = 107
-length = 121
-length = 115
-length = 116
-length = 113
-length = 118
-length = 114
-length = 117
-length = 132
-length = 118
-length = 111
-length = 112
-length = 117
-length = 119
-length = 109
-length = 115
-length = 118
-length = 118
-length = 117
-length = 110
-length = 114
-length = 119
-length = 120
-length = 119
-length = 112
-length = 124
-length = 115
-length = 116
-length = 115
-length = 55
-length = 105
-length = 110
-length = 121
-length = 125
-length = 117
-length = 111
-length = 115
-length = 121
-length = 115
-length = 106
-length = 114
-length = 118
-length = 115
-length = 57
-length = 40
-length = 83
-length = 69
-length = 71
-length = 59
-length = 40
-length = 120
-length = 127
-length = 122
-length = 118
-length = 125
-length = 119
-length = 132
-length = 128
-length = 121
-length = 128
-length = 132
-length = 127
-length = 129
-length = 133
-length = 124
-length = 118
-length = 128
-length = 120
-length = 117
-length = 121
-length = 126
-length = 117
-length = 119
-length = 125
-length = 131
-length = 103
-length = 86
-length = 71
-length = 68
-length = 63
-length = 68
-length = 54
-length = 30
-length = 31
-length = 101
-length = 113
-length = 120
-length = 114
-length = 82
-length = 69
-length = 67
-length = 69
-length = 97
-length = 91
-length = 97
-length = 89
-length = 90
-length = 84
-length = 99
-length = 95
-length = 96
-length = 88
-length = 90
-length = 95
-length = 86
-length = 86
-length = 76
-length = 87
-length = 94
-length = 92
-length = 90
-length = 90
-length = 87
-length = 85
-length = 84
-length = 85
-length = 80
-length = 83
-length = 87
-length = 89
-length = 79
-length = 83
-length = 84
-length = 79
-length = 82
-length = 79
-length = 85
-length = 89
-length = 84
-length = 76
-length = 69
-length = 61
-length = 60
-length = 56
-length = 47
-length = 46
-length = 43
-length = 102
-length = 116
-length = 114
-length = 118
-length = 128
-length = 117
-length = 119
-length = 118
-length = 122
-length = 116
-length = 116
-length = 118
-length = 119
-length = 119
-length = 117
-length = 123
-length = 117
-length = 119
-length = 118
-length = 117
-length = 122
-length = 125
-length = 117
-length = 117
-length = 117
-length = 120
-length = 115
-length = 125
-length = 120
-length = 118
-length = 118
-length = 116
-length = 116
-length = 119
-length = 116
-length = 123
-length = 119
-length = 119
-length = 124
-length = 119
-length = 114
-length = 116
-length = 118
-length = 113
-length = 111
-length = 111
-length = 117
-length = 123
-length = 115
-length = 116
-length = 120
-length = 118
-length = 114
-length = 111
-length = 120
-length = 120
-length = 121
-length = 122
-length = 117
-length = 120
-length = 117
-length = 119
-length = 117
-length = 115
-length = 114
-length = 113
-length = 115
-length = 115
-length = 115
-length = 114
-length = 117
-length = 112
-length = 120
-length = 117
-length = 118
-length = 118
-length = 117
-length = 112
-length = 115
-length = 110
-length = 116
-length = 114
-length = 113
-length = 119
-length = 113
-length = 113
-length = 110
-length = 117
-length = 114
-length = 116
-length = 113
-length = 115
-length = 117
-length = 111
-length = 115
-length = 122
-length = 111
-length = 116
-length = 120
-length = 117
-length = 117
-length = 117
-length = 115
-length = 116
-length = 115
-length = 110
-length = 108
-length = 115
-length = 114
-length = 116
-length = 110
-length = 113
-length = 116
-length = 113
-length = 115
-length = 106
-length = 115
-length = 110
-length = 113
-length = 99
-length = 87
-length = 88
-length = 84
-length = 86
-length = 85
-length = 90
-length = 84
-length = 90
-length = 89
-length = 83
-length = 89
-length = 82
-length = 88
-length = 82
-length = 85
-length = 80
-length = 88
-length = 84
-length = 83
-length = 89
-length = 80
-length = 83
-length = 84
-length = 86
-length = 85
-length = 88
-length = 91
-length = 85
-length = 82
-length = 86
-length = 80
-length = 82
-length = 83
-length = 81
-length = 84
-length = 83
-length = 86
-length = 90
-length = 85
-length = 86
-length = 86
-length = 89
-length = 91
-length = 88
-length = 84
-length = 88
-length = 86
-length = 83
-length = 83
-length = 87
-length = 82
-length = 92
-length = 87
-length = 80
-length = 81
-length = 75
-length = 78
-length = 85
-length = 80
-length = 83
-length = 85
-length = 91
-length = 82
-length = 80
-length = 82
-length = 80
-length = 90
-length = 88
-length = 85
-length = 84
-length = 83
-length = 81
-length = 78
-length = 85
-length = 83
-length = 87
-length = 79
-length = 85
-length = 82
-length = 87
-length = 87
-length = 86
-length = 86
-length = 83
-length = 92
-length = 92
-length = 89
-length = 86
-length = 86
-length = 98
-length = 99
-length = 97
-length = 96
-length = 98
-length = 93
-length = 88
-length = 92
-length = 87
-length = 90
-length = 87
-length = 94
-length = 98
-length = 86
-length = 93
-length = 89
-length = 91
-length = 90
-length = 89
-length = 95
-length = 91
-length = 92
-length = 87
-length = 98
-length = 101
-length = 95
-length = 99
-length = 97
-length = 94
-length = 95
-length = 101
-length = 99
-length = 95
-length = 93
-length = 98
-length = 89
-length = 82
-length = 90
-length = 94
-length = 98
-length = 93
-length = 93
-[195296.50,558.00],[91826.50,4282.00],[39287.25,6370.00],[111155.50,3551.00],[69058.25,5164.00],[162045.50,1342.00],[125912.50,3195.00],[55373.75,5852.00],[148921.75,1930.00],[105906.25,3942.00],[183132.50,848.00],[40650.25,5926.00],[175807.75,1197.00],[175807.75,1197.00],[19863.25,7051.00],[142068.50,2638.00],[183132.50,848.00],[133947.50,2920.00],[128263.75,3037.00],[181170.50,1009.00],[152561.50,1833.00],[142068.50,2638.00],[145222.25,2590.00],[30202.25,6998.00],[110374.25,3628.00],[133947.50,3008.00],[154523.50,1676.00],[18446.25,7992.00],[17154.25,9675.00],[154523.50,1676.00],[89561.50,4962.00],[122491.50,3391.00],[147184.25,2231.00],[19822.25,8317.00],[200473.50,779.00],[200473.50,779.00],[19822.25,8313.00],[140269.50,3233.00],[83184.25,6114.00],[18850.25,9187.00],[138307.50,3342.00],[18850.25,8415.00],[18850.25,8931.00],[18850.25,8927.00],[62608.25,6942.00],[18850.25,8927.00],[18850.25,9695.00],[18850.25,9695.00],[18850.25,9183.00],[18850.25,9695.00],[202435.50,767.00],[18850.25,9183.00],[18850.25,9695.00],[18850.25,10463.00],[18850.25,10463.00],[18850.25,9183.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[202435.50,618.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[18850.25,9699.00],[18850.25,9699.00],[18850.25,9699.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[202435.50,618.00],[18850.25,9699.00],[18850.25,9695.00],[18850.25,9699.00],[202435.50,618.00],[202435.50,618.00],[18850.25,10467.00],[202435.50,618.00],[18850.25,10467.00],[18850.25,10467.00],[202435.50,618.00],tot = 100
+[195296.50,558.00],
+[91826.50,4282.00],
+[39287.25,6370.00],
+[111155.50,3551.00],
+[69058.25,5164.00],
+[162045.50,1342.00],
+[125912.50,3195.00],
+[55373.75,5852.00],
+[148921.75,1930.00],
+[105906.25,3942.00],
+[183132.50,848.00],
+[40650.25,5926.00],
+[175807.75,1197.00],
+[175807.75,1197.00],
+[19863.25,7051.00],
+[142068.50,2638.00],
+[183132.50,848.00],
+[133947.50,2920.00],
+[128263.75,3037.00],
+[181170.50,1009.00],
+[152561.50,1833.00],
+[142068.50,2638.00],
+[145222.25,2590.00],
+[30202.25,6998.00],
+[110374.25,3628.00],
+[133947.50,3008.00],
+[154523.50,1676.00],
+[18446.25,7992.00],
+[17154.25,9675.00],
+[154523.50,1676.00],
+[89561.50,4962.00],
+[122491.50,3391.00],
+[147184.25,2231.00],
+[19822.25,8317.00],
+[200473.50,779.00],
+[200473.50,779.00],
+[19822.25,8313.00],
+[140269.50,3233.00],
+[83184.25,6114.00],
+[18850.25,9187.00],
+[138307.50,3342.00],
+[18850.25,8415.00],
+[18850.25,8931.00],
+[18850.25,8927.00],
+[62608.25,6942.00],
+[18850.25,8927.00],
+[18850.25,9695.00],
+[18850.25,9695.00],
+[18850.25,9183.00],
+[18850.25,9695.00],
+[202435.50,767.00],
+[18850.25,9183.00],
+[18850.25,9695.00],
+[18850.25,10463.00],
+[18850.25,10463.00],
+[18850.25,9183.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[202435.50,618.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[18850.25,9699.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[18850.25,9699.00],
+[18850.25,9695.00],
+[18850.25,9699.00],
+[202435.50,618.00],
+[202435.50,618.00],
+[18850.25,10467.00],
+[202435.50,618.00],
+[18850.25,10467.00],
+[18850.25,10467.00],
+[202435.50,618.00],
+tot = 100
