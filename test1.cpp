@@ -10,8 +10,8 @@ int main(){
         }
     }
 
-    for(int i = 0 ; i < 294 ; i ++){
-        for(int j = 0 ; j < 294 ; j ++){
+    for(int i = 0 ; i < 420 ; i ++){
+        for(int j = 0 ; j < 420 ; j ++){
             printf("%lf ", test[i%14][j%14]);
         }
     }

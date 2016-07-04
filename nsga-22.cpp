@@ -10,7 +10,7 @@
 using namespace std;
 
 const int MAXN = 2000;
-const int number_of_tasks = 294;
+const int number_of_tasks = 420;
 const int number_of_machines = 64;
 const int m = number_of_machines;
 const int n = number_of_tasks;

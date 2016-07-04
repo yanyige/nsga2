@@ -9,7 +9,7 @@ int main(){
     }
 
     for(int i = 0 ; i < 64 ; i ++){
-        for(int j = 0 ; j < 294 ; j ++){
+        for(int j = 0 ; j < 420 ; j ++){
             printf("%lf ", test[j%14]);
         }
     }
