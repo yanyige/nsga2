@@ -783,14 +783,14 @@ void solve(){
 //    }
     int tot = 0;
     for(int i = 0 ; i < pop ; i ++){
-//        if(Collection[i].front == 1){
+        if(Collection[i].front == 1){
             printf("[");
             printf("%.2lf,", Collection[i].maxspan);
             printf("%.2lf", Collection[i].communication_cost, Collection[i].front);
             printf("],", Collection[i].front);
             printf("\n");
             tot ++;
-//        }
+        }
     }
     printf("tot = %d\n", tot);
 }
@@ -799,7 +799,7 @@ void solve(){
 int main(){
     srand(3);
     freopen("in.txt", "r", stdin);
-    freopen("out3.txt", "w", stdout);
+    freopen("out1.txt", "w", stdout);
     solve();
     return 0;
 }

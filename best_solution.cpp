@@ -11,7 +11,7 @@ double ans[10000][10];
 int main(){
     FILE *fp;
     int k = 0;
-    if( (fp=fopen("out3.txt","rt"))!=NULL) {
+    if( (fp=fopen("out2.txt","rt"))!=NULL) {
         while( !feof(fp)) {
             fscanf(fp,"%s",str);
             if(str[0] == '['){

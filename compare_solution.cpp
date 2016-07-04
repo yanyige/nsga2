@@ -1,4 +1,4 @@
-\#include<stdio.h>
+#include<stdio.h>
 #include<string.h>
 
 const int inf = 0x3f3f3f3f;
@@ -8,7 +8,7 @@ double ans1[10000][10];
 int main(){
     FILE *fp;
     int k = 0;
-    if( (fp=fopen("out3.txt","rt"))!=NULL) {
+    if( (fp=fopen("out1.txt","rt"))!=NULL) {
         while( !feof(fp)) {
             fscanf(fp,"%s",str);
             if(str[0] == '['){
@@ -29,19 +29,36 @@ int main(){
         }
         fclose(fp);
     }
+    for(int i = 0 ; i < k ; i ++){
+        printf("i = %d:", i);
+        for(int j = 0 ; j < 2 ; j ++){
+            printf("%.2lf ", ans[i][j]);
+        }
+        printf("\n");
+    }
+    for(int i = 0 ; i < k1 ; i ++){
+        printf("i = %d:", i);
+        for(int j = 0 ; j < 2 ; j ++){
+            printf("%.2lf ", ans1[i][j]);
+        }
+        printf("\n");
+    }
 
     int all = 0;
     for(int i = 0 ; i < k1 ; i ++){
         for(int j = 0 ; j < k ; j ++){
-            if(ans[j][0] <= ans[i][0] && ans[j][1] <= ans[i][1]){
-                if(ans[i][0] != ans[j][0] || ans[i][1] != ans[j][1]){
+            if(ans[j][0] <= ans1[i][0] && ans[j][1] <= ans1[i][1]){
+                if(ans1[i][0] != ans[j][0] || ans1[i][1] != ans[j][1]){
                     all ++;
+                    printf("%dÖ§Åä%d\n", j , i);
                     break;
                 }
             }
         }
     }
-    printf("c = %.2lf\n", all / k1);
+    printf("all = %d k1 = %d\n", all, k1);
+    double ret = all / k1;
+    printf("c = %.2lf\n", ret);
     return 0;
 }
 
