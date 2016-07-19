@@ -10,13 +10,8 @@
 using namespace std;
 
 const int MAXN = 2000;
-<<<<<<< HEAD
-const int number_of_tasks = 420;
-const int number_of_machines = 64;
-=======
 const int number_of_tasks = 14;
 const int number_of_machines = 8;
->>>>>>> a3956f52266f64fbd2e9f0b8428c651fcd62c6ce
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
@@ -66,6 +61,8 @@ struct Individual{
     double crowd_distance;
 }Collection[MAXN], new_individual;
 vector<Individual> Front[MAXN];
+//保存全局最优解
+vector<Individual> GlobalSolutions;
 
 int cmp(const void *a, const void *b){
     return (*(Individual *)a).communication_cost > (*(Individual *)b).communication_cost ? 1:-1;
@@ -157,17 +154,10 @@ void non_domination_sort(Individual individuals[], int length){
         for(int j = 0 ; j < length ; j ++){
             if(i!=j){
                 // if individual[i] dominate individual[j]
-                if(individuals[i].maxspan <= individuals[j].maxspan && individuals[i].communication_cost <= individuals[j].communication_cost){
+                if(individuals[i].maxspan < individuals[j].maxspan && individuals[i].communication_cost < individuals[j].communication_cost){
                     // let individual[j] added to the S of the individual[i]
-                    if(individuals[i].maxspan == individuals[j].maxspan && individuals[i].communication_cost == individuals[j].communication_cost){
-                        continue;
-                    }
                     individuals[i].S.push_back(j);
-
-                }else if(individuals[j].maxspan <= individuals[i].maxspan && individuals[j].communication_cost <= individuals[i].communication_cost){
-                    if(individuals[i].maxspan == individuals[j].maxspan && individuals[i].communication_cost == individuals[j].communication_cost){
-                        continue;
-                    }
+                }else if(individuals[j].maxspan < individuals[i].maxspan && individuals[j].communication_cost < individuals[i].communication_cost){
                     individuals[i].n = individuals[i].n + 1;
                 }
             }
@@ -401,7 +391,6 @@ void crowdDistance(int now_rank){
         front_individuals[length] = (*iter);
         length ++;
     }
-    printf("length = %d\n", length);
     qsort(front_individuals, length, sizeof(front_individuals[0]), cmp);
     front_individuals[0].crowd_distance = inf;
     front_individuals[length - 1].crowd_distance = inf;
@@ -460,6 +449,7 @@ void make_new_pop(Individual individuals[], int length){
 //            }
 //            printf("\n");
 //        }
+
         copy_individual(&individuals[length + i], &new_individual);
 
 //        gacrossover(target1, target2, &new_individual);
@@ -711,7 +701,6 @@ void init(){
         }
 
 
-
 //        for(int j = 0 ; j < m ; j ++){
 //            printf("第%d台机器的序列", j);
 //            for(iter = Collection[i].machine[j].begin(); iter != Collection[i].machine[j].end(); iter ++){
@@ -777,6 +766,26 @@ void solve(){
             }
         }
 
+        //将非支配解加入全局最优解，并且更新全局最优解
+        bool flag_for_update;
+        for(int i = 0 ; i < pop ; i ++){
+            if(Collection[i].front == 1){
+                flag_for_update = true;
+                for(vector<Individual>::iterator iter = GlobalSolutions.begin(); iter != GlobalSolutions.end() ; ++ iter){
+                    if(Collection[i].maxspan < (*iter).maxspan && Collection[i].communication_cost < (*iter).communication_cost){//如果他支配外部种群的解
+                        GlobalSolutions.erase(iter);
+                    }else if(Collection[i].maxspan > (*iter).maxspan && Collection[i].communication_cost > (*iter).communication_cost){// 如果他被支配
+                        flag_for_update = false;
+                        break;
+                    }
+                }
+                if(flag_for_update){ //如果他没有被任何人支配则加入外部种群
+                    GlobalSolutions.push_back(Collection[i]);
+                }
+            }else{
+                break;
+            }
+        }
 //            for(int i = 0 ; i < pop*2 ; i ++){
 //                evaluate_objective(&Collection[i]);
 //                printf("i=%d\n", i);
@@ -800,17 +809,28 @@ void solve(){
             printf("%.2lf,", Collection[i].maxspan);
             printf("%.2lf", Collection[i].communication_cost, Collection[i].front);
             printf("],", Collection[i].front);
+            printf("\n");
             tot ++;
         }
+    }
+    printf("tot = %d\n", tot);
+    tot = 0;
+    for(vector<Individual>::iterator iter = GlobalSolutions.begin(); iter != GlobalSolutions.end() ; ++ iter){
+            printf("[");
+            printf("%.2lf,", (*iter).maxspan);
+            printf("%.2lf", (*iter).communication_cost, (*iter).front);
+            printf("],", (*iter).front);
+            printf("\n");
+            tot ++;
     }
     printf("tot = %d\n", tot);
 }
 
 
 int main(){
-    srand(1);
+    srand(3);
     freopen("in.txt", "r", stdin);
-    freopen("out3.txt", "w", stdout);
+    freopen("out1.txt", "w", stdout);
     solve();
     return 0;
 }

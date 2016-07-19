@@ -8,8 +8,13 @@ int main(){
         scanf("%lf", &test[i]);
     }
 
+<<<<<<< HEAD
     for(int i = 0 ; i < 64 ; i ++){
         for(int j = 0 ; j < 420 ; j ++){
+=======
+    for(int i = 0 ; i < 8 ; i ++){
+        for(int j = 0 ; j < 14 ; j ++){
+>>>>>>> a3956f52266f64fbd2e9f0b8428c651fcd62c6ce
             printf("%lf ", test[j%14]);
         }
     }

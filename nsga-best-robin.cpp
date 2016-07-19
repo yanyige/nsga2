@@ -10,13 +10,8 @@
 using namespace std;
 
 const int MAXN = 2000;
-<<<<<<< HEAD
-const int number_of_tasks = 420;
-const int number_of_machines = 64;
-=======
 const int number_of_tasks = 14;
 const int number_of_machines = 8;
->>>>>>> a3956f52266f64fbd2e9f0b8428c651fcd62c6ce
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
@@ -99,6 +94,24 @@ double abs(double t){
     return t>0?t:-t;
 }
 
+int round_robin_selection(Individual individuals[], int length){
+    int target = 0;
+    double total_fitness = 0;
+    for(int i = 0 ; i < length ; i ++){
+        total_fitness = total_fitness + individuals[i].front;
+    }
+    double dRange = (((rand()+ rand())%100001)/(100000 + 0.0000001)) * total_fitness;
+    double dCursor = 0;
+    for(int i = 0 ; i < length ; i ++){
+        dCursor = dCursor + individuals[i].front;
+        target ++;
+        if(dCursor > dRange){
+            break;
+        }
+    }
+    return target;
+}
+
 void evaluate_objective(Individual *i){
     vector<int>:: iterator iter;
     vector<int>:: iterator jter;
@@ -157,17 +170,10 @@ void non_domination_sort(Individual individuals[], int length){
         for(int j = 0 ; j < length ; j ++){
             if(i!=j){
                 // if individual[i] dominate individual[j]
-                if(individuals[i].maxspan <= individuals[j].maxspan && individuals[i].communication_cost <= individuals[j].communication_cost){
+                if(individuals[i].maxspan < individuals[j].maxspan && individuals[i].communication_cost < individuals[j].communication_cost){
                     // let individual[j] added to the S of the individual[i]
-                    if(individuals[i].maxspan == individuals[j].maxspan && individuals[i].communication_cost == individuals[j].communication_cost){
-                        continue;
-                    }
                     individuals[i].S.push_back(j);
-
-                }else if(individuals[j].maxspan <= individuals[i].maxspan && individuals[j].communication_cost <= individuals[i].communication_cost){
-                    if(individuals[i].maxspan == individuals[j].maxspan && individuals[i].communication_cost == individuals[j].communication_cost){
-                        continue;
-                    }
+                }else if(individuals[j].maxspan < individuals[i].maxspan && individuals[j].communication_cost < individuals[i].communication_cost){
                     individuals[i].n = individuals[i].n + 1;
                 }
             }
@@ -401,7 +407,6 @@ void crowdDistance(int now_rank){
         front_individuals[length] = (*iter);
         length ++;
     }
-    printf("length = %d\n", length);
     qsort(front_individuals, length, sizeof(front_individuals[0]), cmp);
     front_individuals[0].crowd_distance = inf;
     front_individuals[length - 1].crowd_distance = inf;
@@ -430,21 +435,14 @@ void crowdDistance(int now_rank){
 void make_new_pop(Individual individuals[], int length){
 
     vector<int>::iterator iter;
-    int flag_individual[MAXN]; //标记这个个体是否被选择过
-    //tournament_selection
-    memset(flag_individual, 0, sizeof(flag_individual)); //初始全部未被选择
+
     for(int i = 0 ; i < length ; i ++){
-        int target1 = rand() % ((length<<1));
-        while(flag_individual[target1] != 0){
-            target1 = rand() % ((length<<1));
-        }
-        flag_individual[target1] = 1;
-        int target2 = rand() % ((length<<1));
-        while(flag_individual[target2] != 0){
-            target2 = rand() % ((length<<1));
+        int target1 = round_robin_selection(individuals, length<<1);
+        int target2 = round_robin_selection(individuals, length<<1);
+        while(target1 == target2){
+            target2 = round_robin_selection(individuals, length<<1);
         } //随机选择两个目标
-        flag_individual[target2] = 1;
-//        printf("target1 = %d, target2 = %d\n", target1, target2);
+
         int temp = rand() % 10;
         gacrossover(target1, target2, &new_individual);
 
@@ -460,6 +458,7 @@ void make_new_pop(Individual individuals[], int length){
 //            }
 //            printf("\n");
 //        }
+
         copy_individual(&individuals[length + i], &new_individual);
 
 //        gacrossover(target1, target2, &new_individual);
@@ -511,44 +510,6 @@ void greedy_for_workload(){
             now_span[pos] += time_in_machine[i].time;
         }
     }
-}
-
-int father[MAXN];
-/* rank[x]表示x的秩 */
-int rank[MAXN];
-/* 初始化集合 */
-void Make_Set(int x)
-{
-	father[x] = x;
-	rank[x] = 0;
-}
-/* 查找x元素所在的集合,回溯时压缩路径 */
-int Find_Set(int x)
-{
-	if (x != father[x])
-	{
-		father[x] = Find_Set(father[x]);
-	}
-	return father[x];
-}
-/* 按秩合并x,y所在的集合 */
-void Union(int x, int y)
-{
-	x = Find_Set(x);
-	y = Find_Set(y);
-	if (x == y) return;
-	if (rank[x] > rank[y])
-	{
-		father[y] = x;
-	}
-	else
-	{
-		if (rank[x] == rank[y])
-		{
-			rank[y]++;
-		}
-		father[x] = y;
-	}
 }
 
 void greedy_for_communication(){
@@ -742,14 +703,19 @@ void solve(){
 
     int t = 0;
     init();
+    for(int i = 0 ; i < pop*2 ; i ++){
+        evaluate_objective(&Collection[i]);
+    }
+
+    non_domination_sort(Collection, pop * 2);
+
+    make_new_pop(Collection, pop);
 
     while(t < gen){
-        printf("t=%d\n", t);
+//        printf("t=%d\n", t);
 
         int P_size = 0;
         int now_rank = 1;
-
-        make_new_pop(Collection, pop);
 
         for(int i = 0 ; i < pop*2 ; i ++){
             evaluate_objective(&Collection[i]);
@@ -800,6 +766,7 @@ void solve(){
             printf("%.2lf,", Collection[i].maxspan);
             printf("%.2lf", Collection[i].communication_cost, Collection[i].front);
             printf("],", Collection[i].front);
+            printf("\n");
             tot ++;
         }
     }
@@ -808,9 +775,9 @@ void solve(){
 
 
 int main(){
-    srand(1);
+    srand(3);
     freopen("in.txt", "r", stdin);
-    freopen("out3.txt", "w", stdout);
+    freopen("out2.txt", "w", stdout);
     solve();
     return 0;
 }
