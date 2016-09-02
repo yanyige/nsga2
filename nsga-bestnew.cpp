@@ -12,9 +12,9 @@ using namespace std;
 
 const int MAXN = 2000;
 const int number_of_tasks = 14;
-const int number_of_machines =2;//¸Ä»úÆ÷Ê±Òª¸ÄÊµÀý
-const int m = number_of_machines;
-const int n = number_of_tasks;
+const int number_of_machines =3;//¸Ä»úÆ÷Ê±Òª¸ÄÊµÀý
+const int m = number_of_machines; // the number of the machines
+const int n = number_of_tasks; // the number of the tasks
 const int inf = 0x3f3f3f3f;
 const int cycle=3;
 //*******
@@ -23,26 +23,15 @@ const int cycle=3;
 int pop, gen;
 int isdep[n];//±»iÒÀÀµµÄ¸öÊý
 int todep[n];//iÒÀÀµµÄÈÎÎñÊý
-//*******
-//**number_of_objectives - the number of objective function
-//**number_of_decision_variables - number of decision variables
-//**min_range_of_decision_variable[] - minimum possible value for each decision variable
-//**max_range_of_decision_variable[] - maximum possible value for each decision variable
 
-//int n, m;
-
-
-//*******
-//**Ä¿±êº¯Êý   Minimize communication cost
-//**Ä¿±êº¯Êý   Minimize the balance of processor workload
-
-
-//*******
-//**input
-//**t(m,n) Execution time of a task on a processor
-//**c(m,n) Communication cost between two tasks
-
+/********************************************
+input description:
+t(m,n) Execution time of a task on a processor
+c(m,n) Communication cost between two tasks
+********************************************/
 double t[m][n];
+
+
 struct time_table{
     double time;
     int id;
@@ -95,6 +84,15 @@ double abs(double t){
     return t>0?t:-t;
 }
 
+
+/********************************************
+Function: evaluate_objective
+Description: Evaluate each object with max_span and communication_cost
+Input: An individual of a segment
+Output: void;
+Others: Get max_span and communication_cost of the input
+********************************************/
+
 void evaluate_objective(Individual *i){
     vector<int>:: iterator iter;
     vector<int>:: iterator jter;
@@ -106,7 +104,8 @@ void evaluate_objective(Individual *i){
 //        for(int j=0;j<n;j++){
 //            depcopy[ii][j]=c[ii][j];
 //        }
-//    }
+//    }interval[temp] -= 1;
+        interval[temp1] += 1;
 //    int load[m];
 //    memset(load, 0, sizeof(load));
 //    int jud_index[m];
@@ -183,6 +182,14 @@ void evaluate_objective(Individual *i){
 //    i->maxspan = span;
 }
 
+
+/********************************************
+Function: non_domination_sort
+Description: Sort individuals none dominated
+Input: Individual set and the length of individuals
+Output: void;
+Others:
+********************************************/
 // ·ÇÖ§ÅäÅÅÐò
 void non_domination_sort(Individual individuals[], int length){
     vector< Individual > frontCollection;
@@ -234,6 +241,13 @@ void non_domination_sort(Individual individuals[], int length){
 }
 
 
+/********************************************
+Function: crossover
+Description: crossover two target into one
+Input: individual1, individual2, new individual
+Output: void;
+Others:
+********************************************/
 void gacrossover(int target1, int target2, Individual *individual){//½«Ñ¡ÔñµÄÁ½¸ö¸öÌå½øÐÐ½»²æ
     int myMap[MAXN << 1][2];//¼ÇÂ¼Ò»¸öÈÎÎñµÄËùÊô»úÆ÷
     vector<int>:: iterator iter;
@@ -257,7 +271,7 @@ void gacrossover(int target1, int target2, Individual *individual){//½«Ñ¡ÔñµÄÁ½¸
     }
 }
 
-void light_perturbation(int segment[], int size_of_segment, int interval[]){printf("110\n");
+void light_perturbation(int segment[], int size_of_segment, int interval[]){
     int temp, k, pos1, pos2, temp1;
     int interval1[MAXN];
     interval1[0] = interval[0];
@@ -269,33 +283,38 @@ void light_perturbation(int segment[], int size_of_segment, int interval[]){prin
         temp = rand() % m;
     }
     temp1 = rand() % m;
-    while(temp == temp1 || !interval[temp1]){
+    while(temp == temp1){
     //while(!interval[temp1]){
         temp1 = rand() % m;
     }
 
-    if(temp == 0){
-        pos1 = rand() % interval1[temp];
-    }else{
-        pos1 = interval1[temp-1] + rand() % interval[temp];
-    }
-    if(temp1 == 0){
-        pos2 = rand() % interval1[temp1];
-    }else{
-        pos2 = interval1[temp1-1] + rand() % interval[temp1];
-    }
+    if(interval[temp1] != 0) {
+        if(temp == 0){
+            pos1 = rand() % interval1[temp];
+        }else{
+            pos1 = interval1[temp-1] + rand() % interval[temp];
+        }
+        if(temp1 == 0){
+            pos2 = rand() % interval1[temp1];
+        }else{
+            pos2 = interval1[temp1-1] + rand() % interval[temp1];
+        }
 
-    k = segment[pos1];
-    for(int i = pos1 ; i < pos2 ; i ++){
-        segment[i] = segment[i + 1];
-    }
-    segment[pos2] = k;
+        k = segment[pos1];
+        for(int i = pos1 ; i < pos2 ; i ++){
+            segment[i] = segment[i + 1];
+        }
+        segment[pos2] = k;
 
-    interval[temp] -= 1;
-    interval[temp1] += 1;
+        interval[temp] -= 1;
+        interval[temp1] += 1;
+    } else {
+        interval[temp] -= 1;
+        interval[temp1] += 1;
+    }
 }
 
-void heavy_perturbation(int segment[], int size_of_segment, int interval[]){printf("110\n");
+void heavy_perturbation(int segment[], int size_of_segment, int interval[]){
     int temp, k, pos1, pos2, temp1;
     int interval1[MAXN];
     interval1[0] = interval[0];
@@ -309,32 +328,36 @@ void heavy_perturbation(int segment[], int size_of_segment, int interval[]){prin
     }
     // printf("...");
     temp1 = rand() % m;
-    while(temp == temp1 || !interval[temp1]){printf("110\n");
+    while(temp == temp1){
     //while(!interval[temp1]){
        // printf("%d %d\n",temp,temp1);
     // printf("%d \n",interval[temp1]);
         temp1 = rand() % m;
     }
-// printf("...");
-    if(temp == 0){
-        pos1 = rand() % interval1[temp];
-    }else{
-        pos1 = interval1[temp-1] + rand() % interval[temp];
-    }
-    if(temp1 == 0){
-        pos2 = rand() % interval1[temp1];
-    }else{
-        pos2 = interval1[temp1-1] + rand() % interval[temp1];
-    }
+    if(interval[temp1] != 0) {
+        if(temp == 0){
+            pos1 = rand() % interval1[temp];
+        }else{
+            pos1 = interval1[temp-1] + rand() % interval[temp];
+        }
+        if(temp1 == 0){
+            pos2 = rand() % interval1[temp1];
+        }else{
+            pos2 = interval1[temp1-1] + rand() % interval[temp1];
+        }
 
-    k = segment[pos1];
-    segment[pos1] = segment[pos2];
-    segment[pos2] = k;
+        k = segment[pos1];
+        segment[pos1] = segment[pos2];
+        segment[pos2] = k;
+    } else {
+        interval[temp] -= 1;
+        interval[temp1] += 1;
+    }
 
 }
 
 
-void gamutation(Individual *individual){printf("110\n");
+void gamutation(Individual *individual){
 
     int segment[MAXN];
     int interval[MAXN];
@@ -465,7 +488,7 @@ void crowdDistance(int now_rank){
         Front[now_rank].push_back(front_individuals[i]);
     }
 }
-void Swap_localsearch(Individual *individual){printf("110\n");
+void Swap_localsearch(Individual *individual){
     Individual neighbor;
     Individual bestlocal;
     copy_individual(&bestlocal,individual);
@@ -503,7 +526,7 @@ void Swap_localsearch(Individual *individual){printf("110\n");
         copy_individual(individual,&bestlocal);
 
 }
-void make_new_pop(Individual individuals[], int length){printf("110\n");
+void make_new_pop(Individual individuals[], int length){
 
     vector<int>::iterator iter;
     int flag_individual[MAXN]; //±ê¼ÇÕâ¸ö¸öÌåÊÇ·ñ±»Ñ¡Ôñ¹ý
@@ -859,7 +882,7 @@ void solve(){
         }
 
         non_domination_sort(Collection, pop * 2);
-        while(1){printf("110\n");
+        while(1){
             if(P_size + Front[now_rank].size() > pop){
                 break;
             }
@@ -913,7 +936,7 @@ void solve(){
 
 int main(){
     srand(3);
-//    freopen("in.txt", "r", stdin);
+    freopen("in.txt", "r", stdin);
     //freopen("outbiglocalsearch.txt", "w", stdout);
     solve();
     return 0;
