@@ -726,11 +726,17 @@ void repair_segment(Individual *i) {
         printf("actask = %d\n", acTask);
         dependent = false;
         for(nowPoint = 0 ; nowPoint < m ; nowPoint ++) { // 对所有的指针进行循环
-            if(i->machine[nowPoint].size() == taskIndex[nowPoint]) break; // 如果指针指向最后一个元素，跳出
+            printf("size = %d\n", i->machine[nowPoint].size());
+            printf("taskindex = %d\n", taskIndex[nowPoint]);
+            if(i->machine[nowPoint].size() == taskIndex[nowPoint]) {
+//                    dependent = true;
+                    continue; // 如果指针指向最后一个元素，跳出
+            }
             int nowTask = i->machine[nowPoint].at(taskIndex[nowPoint]);
             printf("nowPoint = %d\n", nowPoint);
             printf("nowTask = %d\n", nowTask);
             depentTask[nowPoint] = test(nowTask);
+            printf("depentTask[nowPoint] = %d\n", depentTask[nowPoint]);
             if(depentTask[nowPoint] == -1) { // 如果能符合依赖，指针后移并且可满足的机器数+1.
                 taskIndex[nowPoint] ++;
                 acTask ++;
