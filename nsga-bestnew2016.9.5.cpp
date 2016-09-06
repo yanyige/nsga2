@@ -381,100 +381,84 @@ void gacrossover(int target1, int target2, Individual *individual) //½«Ñ¡ÔñµÄÁ½¸
     }
 }
 
-void light_perturbation(int segment[], int size_of_segment, int interval[])
-{
+void light_perturbation(int segment[], int size_of_segment, int interval[]){
     int temp, k, pos1, pos2, temp1;
     int interval1[MAXN];
     interval1[0] = interval[0];
-    for(int i = 1 ; i < m ; i ++)
-    {
+    for(int i = 1 ; i < m ; i ++){
         interval1[i] = interval1[i-1] + interval[i];
     }
     temp = rand() % m;
-    while(!interval[temp])
-    {
+    while(!interval[temp]){
         temp = rand() % m;
     }
     temp1 = rand() % m;
-    while(temp == temp1 || !interval[temp1])
-    {
-        //while(!interval[temp1]){
+    while(temp == temp1){
         temp1 = rand() % m;
     }
 
-    if(temp == 0)
-    {
-        pos1 = rand() % interval1[temp];
-    }
-    else
-    {
-        pos1 = interval1[temp-1] + rand() % interval[temp];
-    }
-    if(temp1 == 0)
-    {
-        pos2 = rand() % interval1[temp1];
-    }
-    else
-    {
-        pos2 = interval1[temp1-1] + rand() % interval[temp1];
-    }
 
-    k = segment[pos1];
-    for(int i = pos1 ; i < pos2 ; i ++)
-    {
-        segment[i] = segment[i + 1];
-    }
-    segment[pos2] = k;
+    if(interval[temp1] != 0) {
+        if(temp == 0){
+            pos1 = rand() % interval1[temp];
+        }else{
+            pos1 = interval1[temp-1] + rand() % interval[temp];
+        }
+        if(temp1 == 0){
+            pos2 = rand() % interval1[temp1];
+        }else{
+            pos2 = interval1[temp1-1] + rand() % interval[temp1];
+        }
 
-    interval[temp] -= 1;
-    interval[temp1] += 1;
+        k = segment[pos1];
+        for(int i = pos1 ; i < pos2 ; i ++){
+            segment[i] = segment[i + 1];
+        }
+        segment[pos2] = k;
+
+        interval[temp] -= 1;
+        interval[temp1] += 1;
+    } else {
+        interval[temp] -= 1;
+        interval[temp1] += 1;
+    }
 }
 
-void heavy_perturbation(int segment[], int size_of_segment, int interval[])
-{
+void heavy_perturbation(int segment[], int size_of_segment, int interval[]){
     int temp, k, pos1, pos2, temp1;
     int interval1[MAXN];
     interval1[0] = interval[0];
-    for(int i = 1 ; i < m ; i ++)
-    {
+    for(int i = 1 ; i < m ; i ++){
         interval1[i] = interval1[i-1] + interval[i];
     }
-//printf("...");
+
     temp = rand() % m;
-    while(!interval[temp])
-    {
+    while(!interval[temp]){
         temp = rand() % m;
     }
-    // printf("...");
     temp1 = rand() % m;
-    while(temp == temp1 || !interval[temp1])
-    {
-        //while(!interval[temp1]){
-        // printf("%d %d\n",temp,temp1);
-        // printf("%d \n",interval[temp1]);
+    while(temp == temp1){
         temp1 = rand() % m;
     }
-// printf("...");
-    if(temp == 0)
-    {
-        pos1 = rand() % interval1[temp];
-    }
-    else
-    {
-        pos1 = interval1[temp-1] + rand() % interval[temp];
-    }
-    if(temp1 == 0)
-    {
-        pos2 = rand() % interval1[temp1];
-    }
-    else
-    {
-        pos2 = interval1[temp1-1] + rand() % interval[temp1];
-    }
 
-    k = segment[pos1];
-    segment[pos1] = segment[pos2];
-    segment[pos2] = k;
+    if(interval[temp1]) {
+        if(temp == 0){
+            pos1 = rand() % interval1[temp];
+        }else{
+            pos1 = interval1[temp-1] + rand() % interval[temp];
+        }
+        if(temp1 == 0){
+            pos2 = rand() % interval1[temp1];
+        }else{
+            pos2 = interval1[temp1-1] + rand() % interval[temp1];
+        }
+
+        k = segment[pos1];
+        segment[pos1] = segment[pos2];
+        segment[pos2] = k;
+    }else {
+
+    }
 
 }
 
@@ -727,8 +711,9 @@ Output: void;
 Others: Get accepted input of an individual
 ********************************************/
 void repair_segment(Individual *i) {
-    /***************initialize******************/
     vector<int>:: iterator iter;
+    /***************initialize******************/
+
     memset(taskIndex, 0, sizeof(taskIndex));
     int acTask = 0;
     int nowPoint = 0;
@@ -738,11 +723,13 @@ void repair_segment(Individual *i) {
     doneSet.clear();
     /*******************done********************/
     while(acTask < n) {
+        printf("actask = %d\n", acTask);
         dependent = false;
         for(nowPoint = 0 ; nowPoint < m ; nowPoint ++) { // ¶ÔËùÓÐµÄÖ¸Õë½øÐÐÑ­»·
             if(i->machine[nowPoint].size() == taskIndex[nowPoint]) break; // Èç¹ûÖ¸ÕëÖ¸Ïò×îºóÒ»¸öÔªËØ£¬Ìø³ö
             int nowTask = i->machine[nowPoint].at(taskIndex[nowPoint]);
-//            printf("nowPoint = %d\n", nowPoint);
+            printf("nowPoint = %d\n", nowPoint);
+            printf("nowTask = %d\n", nowTask);
             depentTask[nowPoint] = test(nowTask);
             if(depentTask[nowPoint] == -1) { // Èç¹ûÄÜ·ûºÏÒÀÀµ£¬Ö¸ÕëºóÒÆ²¢ÇÒ¿ÉÂú×ãµÄ»úÆ÷Êý+1.
                 taskIndex[nowPoint] ++;
@@ -755,8 +742,18 @@ void repair_segment(Individual *i) {
         }
 
         if(dependent == false) {
+            printf("²»·ûºÏÒÀÀµ\n");
             int temp = rand() % m;
+
             insertMachine(i, taskIndex[temp], temp, depentTask[temp]);
+            printf("²åÈëºóµÄ½á¹û\n");
+            for(int j = 0 ; j < m ; j ++){
+                printf("µÚ%d¸ö»úÆ÷: ", j);
+                for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+                    printf("%d ", (*iter));
+                }
+                printf("\n");
+            }
         }
     }
 }
@@ -1015,6 +1012,40 @@ void greedy_for_communication()
 //    getchar();getchar();
 }
 
+void greedy_with_topo() {
+    int in[n];
+    int number_in_machine[m];
+    int ac_task = 0;
+    int now_machine = 0;
+    int maxN = n / m;
+    int vis[n];
+    for(int i = 0 ; i < n ; i ++) {
+        in[i] = isdep[0][i];
+    }
+    memset(number_in_machine, 0, sizeof(number_in_machine));
+    memset(vis, 0, sizeof(vis));
+
+    while(ac_task < n) {
+        for(int i = 0 ; i < n ; i ++) {
+            if(!in[i] && !vis[i]) {
+                ac_task ++;
+                Collection[0].machine[now_machine].push_back(i);
+                vis[i] = 1;
+                for(int j = 0 ; j < n ;j ++) {
+                    if(c[i][j] > 0) {
+                        in[j] --;
+                    }
+                }
+                if(Collection[0].machine[now_machine].size() >= maxN && now_machine < m - 1) {
+                    now_machine ++;
+                }
+
+            }
+        }
+    }
+
+}
+
 void init()
 {
 
@@ -1034,11 +1065,12 @@ void init()
     }
 
     //greedy_for_workload();
-    greedy_for_communication();
+    //greedy_for_communication();
+    greedy_with_topo();
+    printf("greedy.... done\n");
 
-    for(int i = 2 ; i < pop*2 ; i ++)
+    for(int i = 1 ; i < pop*2 ; i ++)
     {
-
         flag_machine.clear();
         while(!segment.empty())
         {
@@ -1113,7 +1145,18 @@ void init()
             segment.pop();
         }
 
+        for(int j = 0 ; j < m ; j ++){
+            printf("µÚ%dÌ¨»úÆ÷µÄÐòÁÐ", j);
+            for(vector<int>::iterator iter = Collection[i].machine[j].begin(); iter != Collection[i].machine[j].end(); iter ++){
+                printf("%d ", (*iter));
+            }
+            printf("\n");
+        }
+        printf("\n");
 
+        printf("repair... begin\n");
+        repair_segment(&Collection[i]);
+        printf("repair... done\n");
 
 //        for(int j = 0 ; j < m ; j ++){
 //            printf("µÚ%dÌ¨»úÆ÷µÄÐòÁÐ", j);
@@ -1144,12 +1187,7 @@ void solve()
             t[j][i]=t[0][i];
         }
     }
-    //ËùÓÐÈÎÎñÔÚ²»ÓÃ»úÆ÷ÉÏÖ´ÐÐÊ±¼ä²»Í¬
-//    for(int i = 0 ; i < m ; i ++){
-//        for(int j = 0 ; j < n ; j ++){
-//            scanf("%lf", &t[i][j]);
-//        }
-//    }
+
     for(int i = 0 ; i < n ; i ++)
     {
         for(int j = 0 ; j < n ; j ++)
@@ -1186,12 +1224,11 @@ void solve()
             isdep[i][j]=isdep[0][j];
         }
     }
-//    for(int i = 0 ; i < n ; i ++){
-//        printf("%d\n",isdep[i]);
-//        }
 
     int t = 0;
+    printf("init...begin\n");
     init();
+    printf("init...done\n");
 
     while(t < gen)
     {
