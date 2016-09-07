@@ -11,8 +11,8 @@
 using namespace std;
 
 const int MAXN = 2000;
-const int number_of_tasks = 10;
-const int number_of_machines =3;//改机器时要改实例8,14
+const int number_of_tasks = 14;
+const int number_of_machines =8;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
@@ -105,14 +105,14 @@ void evaluate_objective(Individual *i)
     vector<int>:: iterator iter;
     vector<int>:: iterator jter;
 
-    printf("evaluate的结果\n");
-    for(int j = 0 ; j < m ; j ++){
-        printf("第%d个机器: ", j);
-        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
-            printf("%d ", (*iter));
-        }
-        printf("\n");
-    }
+//    printf("evaluate的结果\n");
+//    for(int j = 0 ; j < m ; j ++){
+//        printf("第%d个机器: ", j);
+//        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+//            printf("%d ", (*iter));
+//        }
+//        printf("\n");
+//    }
 
 
     i->n = inf;
@@ -162,8 +162,8 @@ void evaluate_objective(Individual *i)
             load[j]=load[j]+t[j][(*iter)];
             //printf("%d:%d ",*iter,task_in_machine[*iter]);
         }
-        printf("load[%d]=%lf\n",j,load[j]);
-        workload+= abs(load[j]/avg);
+//        printf("load[%d]=%lf\n",j,load[j]);
+        workload+= abs(load[j]-avg);
     }
     i->workload=workload;
     while(it<=n*cycle)
@@ -176,7 +176,9 @@ void evaluate_objective(Individual *i)
         //for(int cyc=0;cyc<cycle;cyc++){
         for(int ii=0; ii<m; ii++)
         {
-            if(flag_end[ii]==cycle) continue;
+            if(flag_end[ii]==cycle||i->machine[ii].empty()) {
+                continue;
+            }
             position=i->machine[ii].at(jud_index[ii]);
             //printf("this %d time:%d ",ii,position);
             //exit(0);
@@ -226,7 +228,7 @@ void evaluate_objective(Individual *i)
                     }
                 }
                 //printf("end:%d ",*(i->machine[ii].rbegin()));
-                if(position==(*(i->machine[ii].rbegin()))) //有问题
+                if(position==(*(i->machine[ii].rbegin()))) //
                 {
                     flag_end[ii]++;
                     jud_index[ii]=0;
@@ -244,25 +246,25 @@ void evaluate_objective(Individual *i)
         //printf("\n");
         //  }
     }
-    for(int ii=0; ii<cycle; ii++)
-    {
-        for(int jj=0; jj<n; jj++)
-        {
-            printf("T[%d][%d]=%lf\n",ii,jj,tao[ii][jj]);
-        }
-    }
+//    for(int ii=0; ii<cycle; ii++)
+//    {
+//        for(int jj=0; jj<n; jj++)
+//        {
+//            printf("T[%d][%d]=%lf\n",ii,jj,tao[ii][jj]);
+//        }
+//    }
 
 
     for(int jj=0; jj<m; jj++)
     {
-        printf("E[%d]=%lf\n",jj,E[jj]);
+//        printf("E[%d]=%lf\n",jj,E[jj]);
         if(E[jj]>i->makespan)
         {
             i->makespan=E[jj];
         }
     }
-    printf("iter=%d,makespan=%lf\n",it-1,i->makespan);
-    printf("************************************\n");
+//    printf("workload=%lf,makespan=%lf\n",i->workload,i->makespan);
+//    printf("************************************\n");
 //    double span = 0;
 //    for(int j = 0 ; j < number_of_machines ; j ++){
 //        double tspan = 0;
@@ -684,7 +686,6 @@ void insertMachine(Individual *i, int a, int b, int c) { // a = taskIndex[nowPoi
     vector<int>:: iterator iter;
     int j = 0;
     int k = 0;
-
     // delete temp
     for(j = 0 ; j < m ; j ++) {
         for(iter = i->machine[j].begin(); iter != i->machine[j].end(); iter ++) {
@@ -728,14 +729,14 @@ Others: Get accepted input of an individual
 void repair_segment(Individual *i) {
     vector<int>:: iterator iter;
     /***************initialize******************/
-    printf("repair前的结果\n");
-    for(int j = 0 ; j < m ; j ++){
-        printf("第%d个机器: ", j);
-        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
-            printf("%d ", (*iter));
-        }
-        printf("\n");
-    }
+//    printf("repair前的结果\n");
+//    for(int j = 0 ; j < m ; j ++){
+//        printf("第%d个机器: ", j);
+//        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+//            printf("%d ", (*iter));
+//        }
+//        printf("\n");
+//    }
     memset(taskIndex, 0, sizeof(taskIndex));
     int acTask = 0;
     int nowPoint = 0;
@@ -745,20 +746,21 @@ void repair_segment(Individual *i) {
     doneSet.clear();
     /*******************done********************/
     while(acTask < n) {
-        printf("actask = %d\n", acTask);
+//        printf("actask = %d\n", acTask);
         dependent = false;
         for(nowPoint = 0 ; nowPoint < m ; nowPoint ++) { // 对所有的指针进行循环
-            printf("size = %d\n", i->machine[nowPoint].size());
-            printf("taskindex = %d\n", taskIndex[nowPoint]);
+//            printf("size = %d\n", i->machine[nowPoint].size());
+//            printf("taskindex = %d\n", taskIndex[nowPoint]);
             if(i->machine[nowPoint].size() == taskIndex[nowPoint]) {
 //                    dependent = true;
+                    depentTask[nowPoint] = -1; // 如果指针指向最后一个任务的后面，说明这个机器已经完成，他的依赖是-1.
                     continue; // 如果指针指向最后一个元素，跳出
             }
             int nowTask = i->machine[nowPoint].at(taskIndex[nowPoint]);
-            printf("nowPoint = %d\n", nowPoint);
-            printf("nowTask = %d\n", nowTask);
+//            printf("nowPoint = %d\n", nowPoint);
+//            printf("nowTask = %d\n", nowTask);
             depentTask[nowPoint] = test(nowTask);
-            printf("depentTask[nowPoint] = %d\n", depentTask[nowPoint]);
+//            printf("depentTask[nowPoint] = %d\n", depentTask[nowPoint]);
             if(depentTask[nowPoint] == -1) { // 如果能符合依赖，指针后移并且可满足的机器数+1.
                 taskIndex[nowPoint] ++;
                 acTask ++;
@@ -770,18 +772,23 @@ void repair_segment(Individual *i) {
         }
 
         if(dependent == false) {
-            printf("不符合依赖\n");
-            int temp = rand() % m;
+//            printf("不符合依赖\n");
+            int machine = rand() % m;
 
-            insertMachine(i, taskIndex[temp], temp, depentTask[temp]);
-            printf("插入后的结果\n");
-            for(int j = 0 ; j < m ; j ++){
-                printf("第%d个机器: ", j);
-                for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
-                    printf("%d ", (*iter));
-                }
-                printf("\n");
-            }
+            int temp = rand() % m;
+//            printf("选择的机器是%d\n", temp);
+            while(depentTask[temp] == -1) temp = rand() % m;
+//            int number = rand() % m;
+//            while(depentTask[number] == -1) number = rand() % m;
+            insertMachine(i, taskIndex[machine], machine, depentTask[temp]);
+//            printf("插入后的结果\n");
+//            for(int j = 0 ; j < m ; j ++){
+//                printf("第%d个机器: ", j);
+//                for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+//                    printf("%d ", (*iter));
+//                }
+//                printf("\n");
+//            }
         }
     }
 }
@@ -820,16 +827,16 @@ void make_new_pop(Individual individuals[], int length)
             gamutation(&new_individual);
             //        printf("5新生成机器%d\n",i);
         }
-        printf("temp = %d\n", temp);
-        printf("新生成机器%d\n",i);
-        for(int j = 0 ; j < m ; j ++){
-            printf("第%d个机器: ", j);
-            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end() ; iter ++){
-                printf("%d ", (*iter));
-            }
-            printf("\n");
-        }
-        //  Swap_localsearch(&new_individual);
+//        printf("temp = %d\n", temp);
+//        printf("新生成机器%d\n",i);
+//        for(int j = 0 ; j < m ; j ++){
+//            printf("第%d个机器: ", j);
+//            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end() ; iter ++){
+//                printf("%d ", (*iter));
+//            }
+//            printf("\n");
+//        }
+          //vSwap_localsearch(&new_individual);
         repair_segment(&new_individual);
 
         copy_individual(&individuals[length + i], &new_individual);
@@ -894,44 +901,6 @@ void greedy_for_workload()
             Collection[0].machine[pos].push_back(time_in_machine[i].id);
             now_span[pos] += time_in_machine[i].time;
         }
-    }
-}
-
-int father[MAXN];
-/* rank[x]表示x的秩 */
-int rank[MAXN];
-/* 初始化集合 */
-void Make_Set(int x)
-{
-    father[x] = x;
-    rank[x] = 0;
-}
-/* 查找x元素所在的集合,回溯时压缩路径 */
-int Find_Set(int x)
-{
-    if (x != father[x])
-    {
-        father[x] = Find_Set(father[x]);
-    }
-    return father[x];
-}
-/* 按秩合并x,y所在的集合 */
-void Union(int x, int y)
-{
-    x = Find_Set(x);
-    y = Find_Set(y);
-    if (x == y) return;
-    if (rank[x] > rank[y])
-    {
-        father[y] = x;
-    }
-    else
-    {
-        if (rank[x] == rank[y])
-        {
-            rank[y]++;
-        }
-        father[x] = y;
     }
 }
 
@@ -1005,7 +974,6 @@ void greedy_for_communication()
             printf("\n");
         }
     evaluate_objective(&Collection[1]);
-    exit(0);
 //        Collection[1].machine[5].push_back(11);
 //        Collection[1].machine[6].push_back(7);
 //        Collection[1].machine[7].push_back(9);
@@ -1096,7 +1064,7 @@ void init()
     //greedy_for_workload();
     //greedy_for_communication();
     greedy_with_topo();
-    printf("greedy.... done\n");
+//    printf("greedy.... done\n");
 
     for(int i = 1 ; i < pop*2 ; i ++)
     {
@@ -1174,9 +1142,9 @@ void init()
             segment.pop();
         }
 
-        printf("repair... begin\n");
+//        printf("repair... begin\n");
         repair_segment(&Collection[i]);
-        printf("repair... done\n");
+//        printf("repair... done\n");
 
 //        for(int j = 0 ; j < m ; j ++){
 //            printf("第%d台机器的序列", j);
@@ -1263,8 +1231,15 @@ void solve()
         {
             evaluate_objective(&Collection[i]);
         }
-        printf("evaluate done ...\n");
+        //printf("evaluate done ...\n");
         non_domination_sort(Collection, pop * 2);
+//         for(int i = 0 ; i < pop*2 ; i ++){
+//            printf("i=%d\n", i);
+//            printf("makespan = %.2lf\n", Collection[i].makespan);
+//            printf("workload = %.2lf\n", Collection[i].workload);
+//            printf("rank = %d\n", Collection[i].front);
+//        }
+
         while(1)
         {
             if(P_size + Front[now_rank].size() > pop)
@@ -1309,14 +1284,14 @@ void solve()
 //        printf("],", Collection[i].front);
 //    }
     int tot = 0;
-    for(int i = 0 ; i < pop ; i ++)
+    for(int i = 0 ; i < pop * 2 ; i ++)
     {
         if(Collection[i].front == 1)
         {
             printf("[");
             printf("%.2lf,", Collection[i].makespan);
-            printf("%.2lf", Collection[i].workload, Collection[i].front);
-            printf("],", Collection[i].front);
+            printf("%.2lf", Collection[i].workload);
+            printf("],");
             printf("\n");
             tot ++;
         }
@@ -1327,9 +1302,9 @@ void solve()
 //void get_segment_array(Individual *i, int **)
 int main()
 {
-    srand(3);
-    freopen("test.txt", "r", stdin);
-    //freopen("outbiglocalsearch.txt", "w", stdout);
+    srand(1);
+    freopen("in6.txt", "r", stdin);
+    freopen("outbiglocalsearch.txt", "w", stdout);
     solve();
     return 0;
 }
