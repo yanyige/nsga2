@@ -104,6 +104,17 @@ void evaluate_objective(Individual *i)
 {
     vector<int>:: iterator iter;
     vector<int>:: iterator jter;
+
+    printf("evaluate的结果\n");
+    for(int j = 0 ; j < m ; j ++){
+        printf("第%d个机器: ", j);
+        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+            printf("%d ", (*iter));
+        }
+        printf("\n");
+    }
+
+
     i->n = inf;
     i->makespan = 0;
     i->workload = 0;
@@ -251,7 +262,7 @@ void evaluate_objective(Individual *i)
         }
     }
     printf("iter=%d,makespan=%lf\n",it-1,i->makespan);
-
+    printf("************************************\n");
 //    double span = 0;
 //    for(int j = 0 ; j < number_of_machines ; j ++){
 //        double tspan = 0;
@@ -397,7 +408,6 @@ void light_perturbation(int segment[], int size_of_segment, int interval[]){
         temp1 = rand() % m;
     }
 
-
     if(interval[temp1] != 0) {
         if(temp == 0){
             pos1 = rand() % interval1[temp];
@@ -409,7 +419,11 @@ void light_perturbation(int segment[], int size_of_segment, int interval[]){
         }else{
             pos2 = interval1[temp1-1] + rand() % interval[temp1];
         }
-
+        if(pos1 > pos2) {
+            k = pos1;
+            pos1 = pos2;
+            pos2 = k;
+        }
         k = segment[pos1];
         for(int i = pos1 ; i < pos2 ; i ++){
             segment[i] = segment[i + 1];
@@ -422,6 +436,7 @@ void light_perturbation(int segment[], int size_of_segment, int interval[]){
         interval[temp] -= 1;
         interval[temp1] += 1;
     }
+
 }
 
 void heavy_perturbation(int segment[], int size_of_segment, int interval[]){
@@ -713,7 +728,14 @@ Others: Get accepted input of an individual
 void repair_segment(Individual *i) {
     vector<int>:: iterator iter;
     /***************initialize******************/
-
+    printf("repair前的结果\n");
+    for(int j = 0 ; j < m ; j ++){
+        printf("第%d个机器: ", j);
+        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+            printf("%d ", (*iter));
+        }
+        printf("\n");
+    }
     memset(taskIndex, 0, sizeof(taskIndex));
     int acTask = 0;
     int nowPoint = 0;
@@ -798,14 +820,15 @@ void make_new_pop(Individual individuals[], int length)
             gamutation(&new_individual);
             //        printf("5新生成机器%d\n",i);
         }
-//        printf("新生成机器%d\n",i);
-//        for(int j = 0 ; j < m ; j ++){
-//            printf("第%d个机器: ", j);
-//            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end() ; iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
+        printf("temp = %d\n", temp);
+        printf("新生成机器%d\n",i);
+        for(int j = 0 ; j < m ; j ++){
+            printf("第%d个机器: ", j);
+            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end() ; iter ++){
+                printf("%d ", (*iter));
+            }
+            printf("\n");
+        }
         //  Swap_localsearch(&new_individual);
         repair_segment(&new_individual);
 
@@ -1151,15 +1174,6 @@ void init()
             segment.pop();
         }
 
-        for(int j = 0 ; j < m ; j ++){
-            printf("第%d台机器的序列", j);
-            for(vector<int>::iterator iter = Collection[i].machine[j].begin(); iter != Collection[i].machine[j].end(); iter ++){
-                printf("%d ", (*iter));
-            }
-            printf("\n");
-        }
-        printf("\n");
-
         printf("repair... begin\n");
         repair_segment(&Collection[i]);
         printf("repair... done\n");
@@ -1238,7 +1252,7 @@ void solve()
 
     while(t < gen)
     {
-        printf("t=%d\n", t);
+        printf("*****************************t=%d*****************************\n", t);
 
         int P_size = 0;
         int now_rank = 1;
@@ -1249,7 +1263,7 @@ void solve()
         {
             evaluate_objective(&Collection[i]);
         }
-
+        printf("evaluate done ...\n");
         non_domination_sort(Collection, pop * 2);
         while(1)
         {
