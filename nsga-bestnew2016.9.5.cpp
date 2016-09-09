@@ -729,14 +729,14 @@ Others: Get accepted input of an individual
 void repair_segment(Individual *i) {
     vector<int>:: iterator iter;
     /***************initialize******************/
-//    printf("repair前的结果\n");
-//    for(int j = 0 ; j < m ; j ++){
-//        printf("第%d个机器: ", j);
-//        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
-//            printf("%d ", (*iter));
-//        }
-//        printf("\n");
-//    }
+    printf("repair前的结果\n");
+    for(int j = 0 ; j < m ; j ++){
+        printf("第%d个机器: ", j);
+        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+            printf("%d ", (*iter));
+        }
+        printf("\n");
+    }
     memset(taskIndex, 0, sizeof(taskIndex));
     int acTask = 0;
     int nowPoint = 0;
@@ -793,6 +793,86 @@ void repair_segment(Individual *i) {
     }
 }
 
+void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
+    vector<int>::iterator iter;
+    printf("swap前\n");
+    for(int j = 0 ; j < m ; j ++){
+        printf("第%d个机器: ", j);
+        for(iter = individual->machine[j].begin(); iter != individual->machine[j].end() ; iter ++){
+            printf("%d ", (*iter));
+        }
+        printf("\n");
+    }
+    int temp = individual->machine[nowM][nowPos];
+    printf("nowM = %d nowPos = %d\n", nowM, nowPos);
+    printf("toM = %d toPos = %d\n",toM, toPos);
+    printf("temp = %d\n", temp);
+    individual->machine[nowM][nowPos] = individual->machine[toM][toPos];
+    printf("to = %d\n", individual->machine[toM][toPos]);
+    printf("now = %d\n", individual->machine[nowM][nowPos]);
+    individual->machine[toM][toPos] = temp;
+    printf("to = %d\n", individual->machine[toM][toPos]);
+    printf("now = %d\n", individual->machine[nowM][nowPos]);
+    printf("swap后\n");
+    for(int j = 0 ; j < m ; j ++){
+        printf("第%d个机器: ", j);
+        for(iter = individual->machine[j].begin(); iter != individual->machine[j].end() ; iter ++){
+            printf("%d ", (*iter));
+        }
+        printf("\n");
+    }
+}
+
+void swap_localsearch(Individual *individual) {
+    /***************initialize******************/
+    int i, j;
+    int k = 10;
+    int nowMachine = 0;
+    int toMachine = 0;
+    int segmentSize[m];
+    bool changed = false;
+    for(int i = 0 ; i < m ; i ++) {
+        segmentSize[i] = individual->machine[i].size();
+        printf("segmentSize[%d] = %d\n", i, segmentSize[i]);
+    }
+    Individual temp_individual = *individual;
+    /***************done******************/
+    while(k --) {
+        // find its neighbor
+        evaluate_objective(&temp_individual);
+        double makespan = temp_individual.makespan;
+        double workload = temp_individual.workload;
+        changed = false;
+        nowMachine = rand() % m; printf("nowMachine = %d\n", nowMachine);
+        if(segmentSize[nowMachine] == 0) continue;
+        i = rand() % segmentSize[nowMachine];
+        for(toMachine = 0 ; toMachine < m ; toMachine ++) {
+
+            for(int j = 0 ; j < segmentSize[toMachine] ; j ++) {
+                printf("j = %d\n", j);
+                if(nowMachine != toMachine && i != j) {
+                    printf("nowMachine = %d i = %d\n", nowMachine, i);
+                    swap_machine(individual, nowMachine, i, toMachine, j);
+                    printf("1\n");
+                    repair_segment(individual);
+                    printf("2\n");
+                    evaluate_objective(individual);
+                    printf("3\n");
+                    if(individual->makespan < makespan && individual->workload < workload) {
+                        k = 10;
+                        changed = true;
+                        break;
+                    } else {
+                        individual = &temp_individual;
+                    }
+                }
+            }
+            if(changed) break;
+        }
+    }
+    return;
+}
+
 void make_new_pop(Individual individuals[], int length)
 {
 
@@ -836,9 +916,10 @@ void make_new_pop(Individual individuals[], int length)
 //            }
 //            printf("\n");
 //        }
-          //vSwap_localsearch(&new_individual);
-        repair_segment(&new_individual);
+          //Swap_localsearch(&new_individual);
 
+        repair_segment(&new_individual);
+        swap_localsearch(&new_individual);
         copy_individual(&individuals[length + i], &new_individual);
 
 //        gacrossover(target1, target2, &new_individual);
@@ -1304,7 +1385,7 @@ int main()
 {
     srand(1);
     freopen("in6.txt", "r", stdin);
-    freopen("outbiglocalsearch.txt", "w", stdout);
+//    freopen("outbiglocalsearch.txt", "w", stdout);
     solve();
     return 0;
 }
