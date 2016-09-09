@@ -301,7 +301,7 @@ void evaluate_objective(Individual *i)
 }
 
 // 非支配排序
-void non_domination_sort(Individual individuals[], int length)
+void non_domination_sort(Individual individuals[], int length, bool last)
 {
     vector< Individual > frontCollection;
     vector< Individual > tempCollection;
@@ -315,15 +315,33 @@ void non_domination_sort(Individual individuals[], int length)
         {
             if(i!=j)
             {
-                // if individual[i] dominate individual[j]
-                if(individuals[i].makespan < individuals[j].makespan && individuals[i].workload < individuals[j].workload)
-                {
-                    // let individual[j] added to the S of the individual[i]
-                    individuals[i].S.push_back(j);
+                if(!last) {
+                    // if individual[i] dominate individual[j]
+                    if(individuals[i].makespan < individuals[j].makespan && individuals[i].workload < individuals[j].workload)
+                    {
+                        // let individual[j] added to the S of the individual[i]
+                        individuals[i].S.push_back(j);
+                    }
+                    else if(individuals[j].makespan < individuals[i].makespan && individuals[j].workload < individuals[i].workload)
+                    {
+                        individuals[i].n = individuals[i].n + 1;
+                    }
                 }
-                else if(individuals[j].makespan < individuals[i].makespan && individuals[j].workload < individuals[i].workload)
-                {
-                    individuals[i].n = individuals[i].n + 1;
+                else {
+                    // if individual[i] dominate individual[j]
+                    if(individuals[i].makespan <= individuals[j].makespan && individuals[i].workload <= individuals[j].workload){
+                        // let individual[j] added to the S of the individual[i]
+                        if(individuals[i].makespan == individuals[j].makespan && individuals[i].workload == individuals[j].workload){
+                            continue;
+                        }
+                        individuals[i].S.push_back(j);
+
+                    }else if(individuals[j].makespan <= individuals[i].makespan && individuals[j].workload <= individuals[i].workload){
+                        if(individuals[i].makespan == individuals[j].makespan && individuals[i].workload == individuals[j].workload){
+                            continue;
+                        }
+                        individuals[i].n = individuals[i].n + 1;
+                    }
                 }
             }
         }
@@ -729,14 +747,14 @@ Others: Get accepted input of an individual
 void repair_segment(Individual *i) {
     vector<int>:: iterator iter;
     /***************initialize******************/
-    printf("repair前的结果\n");
-    for(int j = 0 ; j < m ; j ++){
-        printf("第%d个机器: ", j);
-        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
-            printf("%d ", (*iter));
-        }
-        printf("\n");
-    }
+//    printf("repair前的结果\n");
+//    for(int j = 0 ; j < m ; j ++){
+//        printf("第%d个机器: ", j);
+//        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+//            printf("%d ", (*iter));
+//        }
+//        printf("\n");
+//    }
     memset(taskIndex, 0, sizeof(taskIndex));
     int acTask = 0;
     int nowPoint = 0;
@@ -795,82 +813,106 @@ void repair_segment(Individual *i) {
 
 void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
     vector<int>::iterator iter;
-    printf("swap前\n");
-    for(int j = 0 ; j < m ; j ++){
-        printf("第%d个机器: ", j);
-        for(iter = individual->machine[j].begin(); iter != individual->machine[j].end() ; iter ++){
-            printf("%d ", (*iter));
-        }
-        printf("\n");
-    }
     int temp = individual->machine[nowM][nowPos];
-    printf("nowM = %d nowPos = %d\n", nowM, nowPos);
-    printf("toM = %d toPos = %d\n",toM, toPos);
-    printf("temp = %d\n", temp);
     individual->machine[nowM][nowPos] = individual->machine[toM][toPos];
-    printf("to = %d\n", individual->machine[toM][toPos]);
-    printf("now = %d\n", individual->machine[nowM][nowPos]);
     individual->machine[toM][toPos] = temp;
-    printf("to = %d\n", individual->machine[toM][toPos]);
-    printf("now = %d\n", individual->machine[nowM][nowPos]);
-    printf("swap后\n");
-    for(int j = 0 ; j < m ; j ++){
-        printf("第%d个机器: ", j);
-        for(iter = individual->machine[j].begin(); iter != individual->machine[j].end() ; iter ++){
-            printf("%d ", (*iter));
+//    for(int j = 0 ; j < m ; j ++){
+//        printf("第%d个机器: ", j);
+//        for(iter = individual->machine[j].begin(); iter != individual->machine[j].end() ; iter ++){
+//            printf("%d ", (*iter));
+//        }
+//        printf("\n");
+//    }
+}
+
+bool check_machine(Individual *individual) {
+    vector<int>:: iterator iter;
+    /***************initialize******************/
+    memset(taskIndex, 0, sizeof(taskIndex));
+    int acTask = 0;
+    int nowPoint = 0;
+    int depentTask[m];
+    bool dependent = false;
+    memset(taskUsed, 0, sizeof(taskUsed));
+    doneSet.clear();
+    /*******************done********************/
+    while(acTask < n) {
+        dependent = false;
+        for(nowPoint = 0 ; nowPoint < m ; nowPoint ++) { // 对所有的指针进行循环
+            if(individual->machine[nowPoint].size() == taskIndex[nowPoint]) {
+                    depentTask[nowPoint] = -1; // 如果指针指向最后一个任务的后面，说明这个机器已经完成，他的依赖是-1.
+                    continue; // 如果指针指向最后一个元素，跳出
+            }
+            int nowTask = individual->machine[nowPoint].at(taskIndex[nowPoint]);
+            depentTask[nowPoint] = test(nowTask);
+            if(depentTask[nowPoint] == -1) { // 如果能符合依赖，指针后移并且可满足的机器数+1.
+                taskIndex[nowPoint] ++;
+                acTask ++;
+                if(acTask == n) return true;
+                taskUsed[nowTask] = true;
+                doneSet.insert(nowTask);
+                dependent = true;
+                break;
+            }
         }
-        printf("\n");
+
+        if(dependent == false) {
+            return false;
+        }
     }
 }
 
 void swap_localsearch(Individual *individual) {
     /***************initialize******************/
-    int i, j;
-    int k = 10;
-    int nowMachine = 0;
-    int toMachine = 0;
+    int flag[n];
+    int k = 1;
+    int kMax = n / 3;
+    int nowMachine;
+    int nowPos;
+    int toMachine;
+    int toPos;
     int segmentSize[m];
-    bool changed = false;
-    for(int i = 0 ; i < m ; i ++) {
-        segmentSize[i] = individual->machine[i].size();
-        printf("segmentSize[%d] = %d\n", i, segmentSize[i]);
-    }
     Individual temp_individual = *individual;
-    /***************done******************/
-    while(k --) {
-        // find its neighbor
-        evaluate_objective(&temp_individual);
-        double makespan = temp_individual.makespan;
-        double workload = temp_individual.workload;
-        changed = false;
-        nowMachine = rand() % m; printf("nowMachine = %d\n", nowMachine);
-        if(segmentSize[nowMachine] == 0) continue;
-        i = rand() % segmentSize[nowMachine];
-        for(toMachine = 0 ; toMachine < m ; toMachine ++) {
+    Individual best_individual = *individual;
+    for(int l = 0 ; l < m ; l ++) {
+        segmentSize[l] = temp_individual.machine[l].size();
+    }
+    /******************done*********************/
+    while(k <= kMax) {
+        evaluate_objective(&best_individual);
+        double makespan = best_individual.makespan;
+        double workload = best_individual.workload;
 
-            for(int j = 0 ; j < segmentSize[toMachine] ; j ++) {
-                printf("j = %d\n", j);
-                if(nowMachine != toMachine && i != j) {
-                    printf("nowMachine = %d i = %d\n", nowMachine, i);
-                    swap_machine(individual, nowMachine, i, toMachine, j);
-                    printf("1\n");
-                    repair_segment(individual);
-                    printf("2\n");
-                    evaluate_objective(individual);
-                    printf("3\n");
-                    if(individual->makespan < makespan && individual->workload < workload) {
-                        k = 10;
-                        changed = true;
-                        break;
-                    } else {
-                        individual = &temp_individual;
+        // random generate a task
+        nowMachine = rand() % m;
+        if(segmentSize[nowMachine] == 0) continue;
+        nowPos = rand() % segmentSize[nowMachine];
+        // task done
+        // find best neighbor
+        for(toMachine = 0 ; toMachine < m ; toMachine ++) {
+            if(segmentSize[toMachine]) for(toPos = 0 ; toPos < segmentSize[toMachine] ; toPos ++) {
+                if(nowMachine != toMachine || nowPos != toPos) {
+                    swap_machine(&temp_individual, nowMachine, nowPos, toMachine, toPos);
+                    if(check_machine(&temp_individual)) { //如果符合条件
+                        evaluate_objective(&temp_individual);
+
+                        if(temp_individual.makespan < makespan && temp_individual.workload < workload) {
+                            makespan = temp_individual.makespan;
+                            workload = temp_individual.workload;
+                            best_individual = temp_individual;
+                        }
                     }
+                    temp_individual = *individual;
                 }
             }
-            if(changed) break;
+        }
+        k ++;
+        if(best_individual.makespan < individual->makespan && best_individual.workload < individual->workload) {
+            individual = &best_individual;
+            k = 1;
         }
     }
-    return;
+
 }
 
 void make_new_pop(Individual individuals[], int length)
@@ -1313,7 +1355,7 @@ void solve()
             evaluate_objective(&Collection[i]);
         }
         //printf("evaluate done ...\n");
-        non_domination_sort(Collection, pop * 2);
+        non_domination_sort(Collection, pop * 2, false);
 //         for(int i = 0 ; i < pop*2 ; i ++){
 //            printf("i=%d\n", i);
 //            printf("makespan = %.2lf\n", Collection[i].makespan);
@@ -1364,6 +1406,9 @@ void solve()
 //        printf("%.2lf,rank=%d", Collection[i].communication_cost, Collection[i].front);
 //        printf("],", Collection[i].front);
 //    }
+
+    non_domination_sort(Collection, pop * 2, true);
+
     int tot = 0;
     for(int i = 0 ; i < pop * 2 ; i ++)
     {
@@ -1383,9 +1428,9 @@ void solve()
 //void get_segment_array(Individual *i, int **)
 int main()
 {
-    srand(1);
+    srand(0);
     freopen("in6.txt", "r", stdin);
-//    freopen("outbiglocalsearch.txt", "w", stdout);
+    freopen("outbiglocalsearch.txt", "w", stdout);
     solve();
     return 0;
 }
