@@ -12,7 +12,7 @@ using namespace std;
 
 const int MAXN = 2000;
 const int number_of_tasks = 14;
-const int number_of_machines =8;//改机器时要改实例8,14
+const int number_of_machines =3;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
@@ -516,18 +516,9 @@ void gamutation(Individual *individual)
         }
     }
 
-    int temp = rand() % 2;
-    if(temp == 0)
-    {
-        // printf("...");
-        light_perturbation(segment, size_of_segment, interval);
-        // printf("...");
-    }
-    else
-    {
-        //  printf("...");
-        heavy_perturbation(segment, size_of_segment, interval);
-        //printf("...");
+
+    light_perturbation(segment, size_of_segment, interval);
+//        heavy_perturbation(segment, size_of_segment, interval);
 
     }
 
@@ -536,10 +527,9 @@ void gamutation(Individual *individual)
         vector<int>().swap(individual->machine[j]);
     }
 
-    temp = 0;
+    int temp = 0;
     for(int i = 0 ; i < m ; i ++)
     {
-//        printf("interval[%d] = %d\n", i , interval[i]);
         for(int j = 0 ; j < interval[i] ; j ++)
         {
             individual->machine[i].push_back(segment[temp]);
@@ -655,51 +645,6 @@ void crowdDistance(int now_rank)
         Front[now_rank].push_back(front_individuals[i]);
     }
 }
-void Swap_localsearch(Individual *individual)
-{
-    Individual neighbor;
-    Individual bestlocal;
-    copy_individual(&bestlocal,individual);
-    copy_individual(&neighbor,individual);
-    evaluate_objective(&bestlocal);
-    //int flag=0;//最优解是否被更新
-    vector<int>::iterator iter;
-    vector<int>::iterator iter2;
-    int temp;
-    for(int j=0; j<m; j++)
-    {
-        //printf("%d\n",j);
-        for(iter=neighbor.machine[j].begin(); iter!=neighbor.machine[j].end(); ++iter)
-        {
-
-            for(int k=0; k<m; k++)
-            {
-                for(iter2=neighbor.machine[k].begin(); iter2!=neighbor.machine[k].end(); ++iter2)
-                {
-                    if((*iter)!=(*iter2))
-                    {
-                        //copy_individual(&neighbor,individual);
-                        temp=*iter;
-                        *iter=*iter2;
-                        *iter2=temp;
-                        evaluate_objective(&neighbor);
-                        if(neighbor.makespan<=bestlocal.makespan&&neighbor.workload<=bestlocal.workload)
-                        {
-                            if(!(neighbor.makespan==bestlocal.makespan&&neighbor.workload==bestlocal.workload))
-                            {
-                                copy_individual(&bestlocal,&neighbor);
-                            }
-                        }
-                        copy_individual(&neighbor,individual);
-                    }
-                }
-            }
-        }
-
-
-    }
-    copy_individual(individual,&bestlocal);
-}
 
 void insertMachine(Individual *i, int a, int b, int c) { // a = taskIndex[nowPoint], b = nowPoint, c = temp
     vector<int>:: iterator iter;
@@ -812,163 +757,108 @@ void repair_segment(Individual *i) {
     }
 }
 
-void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
-    vector<int>::iterator iter;
-    int temp = individual->machine[nowM][nowPos];
-    individual->machine[nowM][nowPos] = individual->machine[toM][toPos];
-    individual->machine[toM][toPos] = temp;
-//    for(int j = 0 ; j < m ; j ++){
-//        printf("第%d个机器: ", j);
-//        for(iter = individual->machine[j].begin(); iter != individual->machine[j].end() ; iter ++){
-//            printf("%d ", (*iter));
-//        }
-//        printf("\n");
-//    }
-}
-
-bool check_machine(Individual *individual) {
-    vector<int>:: iterator iter;
-    /***************initialize******************/
-    memset(taskIndex, 0, sizeof(taskIndex));
-    int acTask = 0;
-    int nowPoint = 0;
-    int depentTask[m];
-    bool dependent = false;
-    memset(taskUsed, 0, sizeof(taskUsed));
-    doneSet.clear();
-    /*******************done********************/
-    while(acTask < n) {
-        dependent = false;
-        for(nowPoint = 0 ; nowPoint < m ; nowPoint ++) { // 对所有的指针进行循环
-            if(individual->machine[nowPoint].size() == taskIndex[nowPoint]) {
-                    depentTask[nowPoint] = -1; // 如果指针指向最后一个任务的后面，说明这个机器已经完成，他的依赖是-1.
-                    continue; // 如果指针指向最后一个元素，跳出
-            }
-            int nowTask = individual->machine[nowPoint].at(taskIndex[nowPoint]);
-            depentTask[nowPoint] = test(nowTask);
-            if(depentTask[nowPoint] == -1) { // 如果能符合依赖，指针后移并且可满足的机器数+1.
-                taskIndex[nowPoint] ++;
-                acTask ++;
-                if(acTask == n) return true;
-                taskUsed[nowTask] = true;
-                doneSet.insert(nowTask);
-                dependent = true;
-                break;
-            }
-        }
-
-        if(dependent == false) {
-            return false;
+int round_robin_selection(Individual individuals[], int length){
+    int target = 0;
+    double total_fitness = 0;
+    for(int i = 0 ; i < length ; i ++){
+        total_fitness = total_fitness + individuals[i].front;
+    }
+    double dRange = (((rand()+ rand())%100001)/(100000 + 0.0000001)) * total_fitness;
+    double dCursor = 0;
+    for(int i = 0 ; i < length ; i ++){
+        dCursor = dCursor + individuals[i].front;
+        target ++;
+        if(dCursor > dRange){
+            break;
         }
     }
+    return target;
 }
 
-void swap_localsearch(Individual *individual) {
-    /***************initialize******************/
-    int flag[n];
-    int k = 1;
-    int kMax = n / 3;
-    int nowMachine;
-    int nowPos;
-    int toMachine;
-    int toPos;
-    int segmentSize[m];
-    Individual temp_individual = *individual;
-    Individual best_individual = *individual;
-    for(int l = 0 ; l < m ; l ++) {
-        segmentSize[l] = temp_individual.machine[l].size();
-    }
-    /******************done*********************/
-    while(k <= kMax) {
-        evaluate_objective(&best_individual);
-        double makespan = best_individual.makespan;
-        double workload = best_individual.workload;
-
-        // random generate a task
-        nowMachine = rand() % m;
-        if(segmentSize[nowMachine] == 0) continue;
-        nowPos = rand() % segmentSize[nowMachine];
-        // task done
-        // find best neighbor
-        for(toMachine = 0 ; toMachine < m ; toMachine ++) {
-            if(segmentSize[toMachine]) for(toPos = 0 ; toPos < segmentSize[toMachine] ; toPos ++) {
-                if(nowMachine != toMachine || nowPos != toPos) {
-                    swap_machine(&temp_individual, nowMachine, nowPos, toMachine, toPos);
-                    if(check_machine(&temp_individual)) { //如果符合条件
-                        evaluate_objective(&temp_individual);
-
-                        if(temp_individual.makespan < makespan && temp_individual.workload < workload) {
-                            makespan = temp_individual.makespan;
-                            workload = temp_individual.workload;
-                            best_individual = temp_individual;
-                        }
-                    }
-                    temp_individual = *individual;
-                }
-            }
-        }
-        k ++;
-        if(best_individual.makespan < individual->makespan && best_individual.workload < individual->workload) {
-            individual = &best_individual;
-            k = 1;
-        }
-    }
-
+int compare_individual(Individual individual1, Individual individual2){
+    evaluate_objective(&individual1);
+    evaluate_objective(&individual2);
+    if(individual1.communication_cost > individual2.communication_cost && individual1.maxspan > individual2.maxspan) return 2;
+    else if(individual1.communication_cost < individual2.communication_cost && individual1.maxspan < individual2.maxspan) return 1;
+    else return 3;
 }
 
-void make_new_pop(Individual individuals[], int length)
-{
+void make_new_pop(Individual individuals[], int length){
 
     vector<int>::iterator iter;
     int flag_individual[MAXN]; //标记这个个体是否被选择过
     //tournament_selection
     memset(flag_individual, 0, sizeof(flag_individual)); //初始全部未被选择
-    for(int i = 0 ; i < length ; i ++)
-    {
-        int target1 = rand() % ((length<<1));
-        while(flag_individual[target1] != 0)
-        {
-            target1 = rand() % ((length<<1));
+    for(int i = 0 ; i < length ; i ++){
+
+        int target1 = round_robin_selection(individuals, length);
+        int target2 = round_robin_selection(individuals, length);
+        while(target1 == target2){
+            target2 = round_robin_selection(individuals, length);
         }
-        //   printf("1新生成机器%d\n",i);
-        flag_individual[target1] = 1;
-        int target2 = rand() % ((length<<1));
-        while(flag_individual[target2] != 0)
-        {
-            target2 = rand() % ((length<<1));
-        } //随机选择两个目标
-        //     printf("2新生成机器%d\n",i);
-        flag_individual[target2] = 1;
-//        printf("target1 = %d, target2 = %d\n", target1, target2);
         int temp = rand() % 10;
         gacrossover(target1, target2, &new_individual);
-        //    printf("3新生成机器%d\n",i);
+
         if(temp >= 0 && temp < 9) {}
-        else
-        {
-            //        printf("4新生成机器%d\n",i);
+        else {
             gamutation(&new_individual);
-            //        printf("5新生成机器%d\n",i);
         }
-//        printf("temp = %d\n", temp);
-//        printf("新生成机器%d\n",i);
-//        for(int j = 0 ; j < m ; j ++){
-//            printf("第%d个机器: ", j);
-//            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end() ; iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
-          //Swap_localsearch(&new_individual);
-
-        repair_segment(&new_individual);
-        //swap_localsearch(&new_individual);
-        copy_individual(&individuals[length + i], &new_individual);
-
-//        gacrossover(target1, target2, &new_individual);
-//        gamutation(&new_individual);
-
-
+        if(compare_individual(individuals[target1], individuals[target2]) == 1){
+            if(compare_individual(individuals[target1], new_individual) == 1){
+                individuals[length + i] = individuals[target1];
+            }else if(compare_individual(individuals[target1], new_individual) == 2){
+                individuals[length + i] = new_individual;
+            }else{
+                int temp = rand() % 2;
+                if(temp){
+                    individuals[length + i] = new_individual;
+                }else{
+                    individuals[length + i] = individuals[target1];
+                }
+            }
+        }else if(compare_individual(individuals[target1], individuals[target2]) == 2){
+            if(compare_individual(individuals[target2], new_individual) == 1){
+                individuals[length + i] = individuals[target2];
+            }else if(compare_individual(individuals[target2], new_individual) == 2){
+                individuals[length + i] = new_individual;
+            }else{
+                int temp = rand() % 2;
+                if(temp){
+                    individuals[length + i] = new_individual;
+                }else{
+                    individuals[length + i] = individuals[target2];
+                }
+            }
+        }else{
+            int temp = rand() % 2;
+            if(temp){
+                if(compare_individual(individuals[target1], new_individual) == 1){
+                    individuals[length + i] = individuals[target1];
+                }else if(compare_individual(individuals[target1], new_individual) == 2){
+                    individuals[length + i] = new_individual;
+                }else{
+                    int temp = rand() % 2;
+                    if(temp){
+                        individuals[length + i] = new_individual;
+                    }else{
+                        individuals[length + i] = individuals[target1];
+                    }
+                }
+            }else{
+                if(compare_individual(individuals[target2], new_individual) == 1){
+                    individuals[length + i] = individuals[target2];
+                }else if(compare_individual(individuals[target2], new_individual) == 2){
+                    individuals[length + i] = new_individual;
+                }else{
+                    int temp = rand() % 2;
+                    if(temp){
+                        individuals[length + i] = new_individual;
+                    }else{
+                        individuals[length + i] = individuals[target2];
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1187,10 +1077,9 @@ void init()
 
     //greedy_for_workload();
     //greedy_for_communication();
-    greedy_with_topo();
-//    printf("greedy.... done\n");
+//    greedy_with_topo();
 
-    for(int i = 1 ; i < pop*2 ; i ++)
+    for(int i = 0 ; i < pop*2 ; i ++)
     {
         flag_machine.clear();
         while(!segment.empty())
@@ -1338,9 +1227,7 @@ void solve()
     }
 
     int t = 0;
-    printf("init...begin\n");
     init();
-    printf("init...done\n");
 
     while(t < gen)
     {
@@ -1430,8 +1317,8 @@ void solve()
 int main()
 {
     srand(1);
-    freopen("in6.txt", "r", stdin);
-//    freopen("outbiglocalsearch.txt", "w", stdout);
+    freopen("TMNR.dat", "r", stdin);
+    freopen("rand1.txt", "w", stdout);
     solve();
     return 0;
 }
