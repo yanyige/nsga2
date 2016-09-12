@@ -12,7 +12,7 @@ using namespace std;
 
 const int MAXN = 2000;
 const int number_of_tasks = 14;
-const int number_of_machines =8;//改机器时要改实例8,14
+const int number_of_machines =14;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
@@ -810,6 +810,14 @@ void repair_segment(Individual *i) {
 //            }
         }
     }
+    printf("repair后的结果\n");
+    for(int j = 0 ; j < m ; j ++){
+        printf("第%d个机器: ", j);
+        for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
+            printf("%d ", (*iter));
+        }
+        printf("\n");
+    }
 }
 
 void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
@@ -962,7 +970,7 @@ void make_new_pop(Individual individuals[], int length)
           //Swap_localsearch(&new_individual);
 
         repair_segment(&new_individual);
-        //swap_localsearch(&new_individual);
+//        swap_localsearch(&new_individual);
         copy_individual(&individuals[length + i], &new_individual);
 
 //        gacrossover(target1, target2, &new_individual);
@@ -1431,7 +1439,7 @@ int main()
 {
     srand(1);
     freopen("in6.txt", "r", stdin);
-//    freopen("outbiglocalsearch.txt", "w", stdout);
+    freopen("outbiglocalsearch.txt", "w", stdout);
     solve();
     return 0;
 }
