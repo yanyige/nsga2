@@ -11,12 +11,12 @@
 using namespace std;
 
 const int MAXN = 2000;
-const int number_of_tasks = 262;
-const int number_of_machines =8;//改机器时要改实例8,14
+const int number_of_tasks = 14;
+const int number_of_machines =3;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
-const int cycle=2;//周期数
+const int cycle=3;//周期数
 //*******
 //**pop - Population size
 //**gen - Total number of generations
@@ -77,10 +77,6 @@ int cmp2(const void *a, const void *b)
 int cmp3(const void *a, const void *b)
 {
     return (*(time_table *)a).time > (*(time_table *)b).time ? -1 : 1;
-}
-
-int cmp4( const void *a , const void *b ){
-    return *(int *)b - *(int *)a;
 }
 
 void copy_individual(Individual *i, Individual *j)
@@ -731,21 +727,14 @@ void insertMachine(Individual *i, int a, int b, int c) { // a = taskIndex[nowPoi
 
 int test(int task) {
     int i;
-    int arr[n];
-    int tot = 0;
-    memset(arr, 0, sizeof(arr));
     for(i = 0 ; i < n ; i ++) {
         if(c[i][task] > 0) {
             if(doneSet.find(i) == doneSet.end() && taskUsed[i] == false) { //如果没有找到
-                arr[tot ++] = i;
+                return i;
             }
         }
     }
-    if(!tot)return -1;
-    else {
-        qsort(arr, tot, sizeof(arr[0]), cmp4);
-        return arr[0];
-    }
+    return -1;
 }
 
 //Repair segment
@@ -821,13 +810,13 @@ void repair_segment(Individual *i) {
 //            }
         }
     }
-//    evaluate_objective(i);
-//
-//        printf("[");
-//        printf("%.2lf,", i->makespan);
-//        printf("%.2lf", i->workload);
-//        printf("],");
-//        printf("\n");
+    evaluate_objective(i);
+
+        printf("[");
+        printf("%.2lf,", i->makespan);
+        printf("%.2lf", i->workload);
+        printf("],");
+        printf("\n");
 }
 
 void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
@@ -1448,8 +1437,8 @@ void solve()
 int main()
 {
     srand(1);
-    freopen("model1.txt", "r", stdin);
-//    freopen("out6.txt", "w", stdout);
+    freopen("TMNR.dat", "r", stdin);
+    freopen("TMNR-rand1-lsnsga2-repair.txt", "w", stdout);
     solve();
     return 0;
 }
