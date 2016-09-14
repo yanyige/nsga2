@@ -11,7 +11,7 @@
 using namespace std;
 
 const int MAXN = 2000;
-const int number_of_tasks = 262;
+const int number_of_tasks = 14;
 const int number_of_machines =8;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
@@ -1448,7 +1448,7 @@ void solve()
 int main()
 {
     srand(1);
-    freopen("model1.txt", "r", stdin);
+    freopen("in6.txt", "r", stdin);
 //    freopen("out6.txt", "w", stdout);
     solve();
     return 0;
