@@ -1,0 +1,6 @@
+mp3decoder16: 16,
+h264_16: 36,
+MWD: 12,
+TMNR: 16,
+FFT_LOOP: 27,
+FFT_butterfly: 48

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <script src="jquery-1.11.3.min.js"></script>
+    <script src="echarts.min.js"></script>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 730px;height:333px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+        var arr = [[131362.00,634.00],
+[100956.00,6269.00],
+[121246.00,866.00],
+[107667.00,4835.00],
+[108489.00,1450.00],
+[117630.00,1448.00],
+[122385.00,774.00],
+[131557.00,162.00],
+[106239.00,5096.00]];
+        var arr1 = [[58916.00,8467.50],
+[87565.00,4204.50],
+[73093.00,7355.00],
+[86653.00,4644.00],
+[105468.00,2174.00],
+[65725.00,7470.00],
+[79407.00,5589.50],
+[75157.00,6288.00],
+[79636.00,5398.00],
+[88997.00,3962.00],
+[98664.00,3778.50],
+[85642.00,5308.50],
+[73473.00,7034.00]];
+		var arr2 = [[38551.00,38748.00],
+[51622.00,12176.25],
+[48883.00,14670.25],
+[40958.00,19434.50],
+[63362.00,10036.25],
+[38791.00,26276.50],
+[43356.00,16916.25],
+[40392.00,25490.00],
+[48121.00,15423.75],
+[45545.00,16407.50],
+[44839.00,16728.25],
+[58595.00,11075.75]];
+		var arr3 = [[126975.00,3376.00],
+[119686.00,10419.00],
+[128491.00,2445.00],
+[138614.00,826.00],
+[150444.00,320.00],
+[129087.00,2250.00],
+[120385.00,3450.00],
+[116838.00,10784.00],
+[151295.00,318.00],
+[146992.00,748.00],
+[127693.00,2973.00],
+[147943.00,342.00],
+[130064.00,1644.00],
+[120042.00,7963.00],
+[137074.00,942.00]];
+		var arr4 = [[110527.00,2803.50],
+[87183.00,4224.00],
+[80620.00,9326.00],
+[82960.00,9297.50],
+[84912.00,7338.50],
+[78375.00,10066.00],
+[75056.00,11467.50],
+[103480.00,3955.50],
+[103480.00,3955.50]];
+		var arr5 = [[51571.00,16562.00],
+[74943.00,10906.00],
+[49430.00,20645.75],
+[57726.00,14977.75],
+[76956.00,10874.25],
+[59485.00,14108.50],
+[57170.00,15801.75],
+[61004.00,12882.25],
+[67155.00,11734.00],
+[62324.00,12099.50]];
+        // 指定图表的配置项和数据
+        option = {
+        title: {
+        	show: false,
+        	text: "h264_14",
+        	left: "center",
+        },
+	    tooltip : {
+	        trigger: 'axis',
+	        showDelay : 0,
+	        axisPointer:{
+	            show: true,
+	            type : 'cross',
+	            lineStyle: {
+	                type : 'dashed',
+	                width : 1
+	            }
+	        },
+	        zlevel: 1
+	    },
+	    legend: {
+	    	top: 60,
+	        data:['MOHA-machine4','MOHA-machine8','MOHA-machine16','NSGA2-machine4','NSGA2-machine8','NSGA2-machine16'],
+	        orient: 'verticle',
+	        right: 0,
+	    },
+	    grid: {
+	    	width: 500,
+	    },
+	    toolbox: {
+	        show : 'true',
+	        feature : {
+	            mark : {show: true},
+	            dataZoom : {show: true},
+	            dataView : {show: true, readOnly: false},
+	            restore : {show: true},
+	            saveAsImage : {
+	            	show: true,
+	            	pixelRatio: 4,
+	            }
+	        }
+	    },
+	    xAxis : {
+	    	type: 'value',
+	    	scale: true,
+	    	name: 'makespan',
+	    	nameTextStyle: {
+	    		fontSize: 20,
+	    	},
+	    	axisLine: {
+		    	lineStyle: {
+		    	}
+		    },
+		    nameGap: 0
+	    },
+	    yAxis :{
+	    	type: 'value',
+	    	scale: true,
+	    	name: 'workload',
+	    	nameTextStyle: {
+	    		fontSize: 20,
+	    	},
+	    	axisLine: {
+		    	lineStyle: {
+		    	}
+		    }
+	    },
+	    series : [
+	        {
+	            name:'MOHA-machine4',
+	            type:'scatter',
+	            large: true,
+	            symbolSize: 10,
+	            itemStyle: {
+                    normal: {
+                        color: 'rgb(198,43,45)'
+                    }
+                },
+	            data: (function () {
+	                var d = [];
+	                var len = 9;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr[i][0],arr[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        },
+	        {
+	            name:'MOHA-machine8',
+	            type:'scatter',
+	            large: true,
+	            symbol: 'triangle',
+	            symbolSize: 10,
+	            itemStyle: {
+                    normal: {
+                        color: 'rgb(198,43,45)'
+                    }
+                },
+	            data: (function () {
+	                var d = [];
+	                var len = 13;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr1[i][0],arr1[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        },
+	        {
+	            name:'MOHA-machine16',
+	            type:'scatter',
+	            large: true,
+	            symbol: 'diamond',
+	            symbolSize: 10,
+	            itemStyle: {
+                    normal: {
+                        color: 'rgb(198,43,45)'
+                    }
+                },
+	            data: (function () {
+	                var d = [];
+	                var len = 12;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr2[i][0],arr2[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        },
+	        {
+	            name:'NSGA2-machine4',
+	            type:'scatter',
+	            large: true,
+	            symbolSize: 10,
+	            itemStyle: {
+                    normal: {
+                        color: 'DarkGreen'
+                    }
+                },
+	            data: (function () {
+	                var d = [];
+	                var len = 15;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr3[i][0],arr3[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        },
+	        {
+	            name:'NSGA2-machine8',
+	            type:'scatter',
+	            large: true,
+	            symbol: 'triangle',
+	            symbolSize: 10,
+	            itemStyle: {
+                    normal: {
+                        color: 'DarkGreen'
+                    }
+                },
+	            data: (function () {
+	                var d = [];
+	                var len = 9;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr4[i][0],arr4[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        },
+	        {
+	            name:'NSGA2-machine16',
+	            type:'scatter',
+	            large: true,
+	            symbol: 'diamond',
+	            symbolSize: 10,
+	            itemStyle: {
+                    normal: {
+                        color: 'DarkGreen'
+                    }
+                },
+	            data: (function () {
+	                var d = [];
+	                var len = 10;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr5[i][0],arr5[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        }
+	    ]
+	};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+</body>
+</html>

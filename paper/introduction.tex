@@ -1,0 +1,27 @@
+\section{Introdution\label{se:intro}}
+Mapping and scheduling applications onto a multi-core platform is a key factor, to cope with continuously
+increasing conflicting demands of both high performance and low power consumption. %The requirements are always conflicting with each other. 
+For example, makespan minimization requires allocating more computations on faster processors. Consequently, the unbalanced workload may keep fast processors busy in computation, while other processors being waiting, which leads to more power consumption. On the other hand, computation workload balance leads to a more parallel implementation. However, the increasing communication between tasks on different processors may result in the increase in the makespan. Therefore, there exists a set of mutually incomparable solutions representing different design tradeoffs.
+
+To achieve high performance and low power consumption for MPSoCs, we consider workload balance and makespan minimization in static task allocation and scheduling problems. Meanwhile, we model the corresponding constraints together, to avoid local optimal obtained from separated optimization of the two criteria.
+
+In this context, the traditional solution for mapping and scheduling problems with integer linear programming (ILP), is less feasible to cope with multiple objectives and large scale systems~\cite{DBLP:journals/jcp/YaoZW14,HuangYYZYBJF15}. There are various algorithms and heuristics for computing solutions for multi-objective optimization problems. For example, evolutionary algorithms~\cite{Yang2009,konak2006multi},  based on successive optimization and simulation steps, use heuristics to refine optimal solutions.
+Some constraint solvers are also applied to approximate the Pareto fronts and guarantee the computable bounds~\cite{legriel2010approximating}.
+%To speed up the optimization progress, a problem can be decomposed and consecutively solved~\cite{kang2012multi}.
+However, the efficiency and scalability are still the bottlenecks for the methods to be applied for large scale applications.
+%\cite{legriel2010approximating} submits queries to a constraint solver, and use the answers as the approximation of  the Pareto front of the problem, or the guarantee of the computable bounds.
+To tackle this problem, we propose an alternative method, % to solve the problem, 
+which is based on a mixture of multi-objective genetic and local search techniques. By integrating a pareto local search  into an evolutionary procedure, we could obtain both the expansive searching ability of the population-based technique and the intensive searching ability of the local search method.
+Specifically, the proposed algorithm mainly consists of three ingredients, including a problem-specific initialization to generate promising initial candidate solutions, a genetic operator to roughly search the space, and a local search operator to exhaustively seek through the better feasible solutions.% In order to test the effectiveness of the algorithm, we have tested it against realistic benchmarks and also compared with other optimization algorithms, such as NSGAII.
+
+Compared with the-state-of-the-art methods, the algorithm is more efficient for computing Pareto optimals, and is capable of dealing with large scale realistic applications.
+%We evaluate the efficiency of the algorithm for mapping and scheduling optimization of MPSoCs according to the makespan and workload balance minimization. Compared with the-state-of-the-art methods, for the similar solutions, the algorithm requires less time {\rjnote and memory(is that ok? Shall we remove this?)}, which is capable of optimization of large-scale realistic applications.
+
+
+The contributions are as follows. First, we propose to optimize task allocation and scheduling of MPSoCs with respect to two criteria, i.e., makespan minimization and workload balance, involving both performance and energy consumption considerations. Second, to avoid local optimization from stepwise methods or decomposition methods, we model the constraints on mapping and scheduling together. The model characterizes computation, inter-processor communication, and can be extended for other optimization criteria. Finally, to provide solutions for realistic applications,        we propose a Pareto local search based algorithm within a novel genetic framework, called Multi-objective hybrid algorithm(MOHA), to approximate Pareto optimal. Experimental results show that
+we could obtain the solutions even for realistic applications with more than two hundred tasks.
+%This local search technique blending with a novel genetic framework is a balance between exploration and exploitation. Moreover, experimental results show that the PMA provides not only abundant but also high-quality candidates for decision makers}. Second, we have modeled the constraints of the mapping and scheduling problem. Benefited from the algorithm, we could obtain the solutions from two-objective optimizaiton even for realistic applications with more than two hundred tasks.
+
+The paper is structured as follows. After a brief summary of the related work, we define task graphs for application models, provide the assumption for target platforms, and describe the mapping and scheduling problem in Seciton \ref{se:pre}. Section \ref{se:ilp} models constraints for mapping and scheduling problem.
+Section \ref{se:loc} introduces MOHA algorithm.
+We present the experimental results in Section \ref{se:imp}. Section \ref{se:con} concludes.

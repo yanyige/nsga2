@@ -12,11 +12,11 @@ using namespace std;
 
 const int MAXN = 2000;
 const int number_of_tasks = 14;
-const int number_of_machines =2;//改机器时要改实例8,14
+const int number_of_machines =4;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
-const int cycle=3;//周期数
+const int cycle=2;//周期数
 //*******
 //**pop - Population size
 //**gen - Total number of generations
@@ -99,6 +99,7 @@ double abs(double t)
 {
     return t>0?t:-t;
 }
+
 void evaluate_objective(Individual *i)
 {
     vector<int>:: iterator iter;
@@ -213,12 +214,7 @@ void evaluate_objective(Individual *i)
 //                    }
 //                }
                // E[ii]+=Lstart;
-               for(int kk=0;kk<n;kk++){
-                    if(c[position][kk]>0 && (task_in_machine[kk] != task_in_machine[position])){
-                        E[ii]+=2;
-                        break;
-                    }
-               }
+               E[ii]+=2;
                 it++;
                 for(int jj=0; jj<n; jj++)
                 {
@@ -659,51 +655,6 @@ void crowdDistance(int now_rank)
         Front[now_rank].push_back(front_individuals[i]);
     }
 }
-void Swap_localsearch(Individual *individual)
-{
-    Individual neighbor;
-    Individual bestlocal;
-    copy_individual(&bestlocal,individual);
-    copy_individual(&neighbor,individual);
-    evaluate_objective(&bestlocal);
-    //int flag=0;//最优解是否被更新
-    vector<int>::iterator iter;
-    vector<int>::iterator iter2;
-    int temp;
-    for(int j=0; j<m; j++)
-    {
-        //printf("%d\n",j);
-        for(iter=neighbor.machine[j].begin(); iter!=neighbor.machine[j].end(); ++iter)
-        {
-
-            for(int k=0; k<m; k++)
-            {
-                for(iter2=neighbor.machine[k].begin(); iter2!=neighbor.machine[k].end(); ++iter2)
-                {
-                    if((*iter)!=(*iter2))
-                    {
-                        //copy_individual(&neighbor,individual);
-                        temp=*iter;
-                        *iter=*iter2;
-                        *iter2=temp;
-                        evaluate_objective(&neighbor);
-                        if(neighbor.makespan<=bestlocal.makespan&&neighbor.workload<=bestlocal.workload)
-                        {
-                            if(!(neighbor.makespan==bestlocal.makespan&&neighbor.workload==bestlocal.workload))
-                            {
-                                copy_individual(&bestlocal,&neighbor);
-                            }
-                        }
-                        copy_individual(&neighbor,individual);
-                    }
-                }
-            }
-        }
-
-
-    }
-    copy_individual(individual,&bestlocal);
-}
 
 void insertMachine(Individual *i, int a, int b, int c) { // a = taskIndex[nowPoint], b = nowPoint, c = temp
     vector<int>:: iterator iter;
@@ -729,16 +680,33 @@ void insertMachine(Individual *i, int a, int b, int c) { // a = taskIndex[nowPoi
     return ;
 }
 
+struct Node {
+    int id;
+    double value;
+}arr[n];
+
+int cmp4(const void *a, const void *b)
+{
+    return (*(Node *)a).value < (*(Node *)b).value ? -1:1;
+}
+
 int test(int task) {
     int i;
+    int tot = 0;
+    memset(arr, 0, sizeof(arr));
     for(i = 0 ; i < n ; i ++) {
         if(c[i][task] > 0) {
             if(doneSet.find(i) == doneSet.end() && taskUsed[i] == false) { //如果没有找到
-                return i;
+                arr[tot].id = i;
+                arr[tot ++].value = c[i][task];
             }
         }
     }
-    return -1;
+    if(!tot)return -1;
+    else {
+        qsort(arr, tot, sizeof(arr[0]), cmp4);
+        return arr[0].id;
+    }
 }
 
 //Repair segment
@@ -795,32 +763,22 @@ void repair_segment(Individual *i) {
         }
 
         if(dependent == false) {
-//            printf("不符合依赖\n");
-            int machine = rand() % m;
-
             int temp = rand() % m;
-//            printf("选择的机器是%d\n", temp);
             while(depentTask[temp] == -1) temp = rand() % m;
+            int machine = rand() % m;
+            while(temp == machine) machine = rand() % m;
 //            int number = rand() % m;
 //            while(depentTask[number] == -1) number = rand() % m;
             insertMachine(i, taskIndex[machine], machine, depentTask[temp]);
-//            printf("插入后的结果\n");
-//            for(int j = 0 ; j < m ; j ++){
-//                printf("第%d个机器: ", j);
-//                for(iter = i->machine[j].begin(); iter != i->machine[j].end() ; iter ++){
-//                    printf("%d ", (*iter));
-//                }
-//                printf("\n");
-//            }
         }
     }
-    evaluate_objective(i);
-
-        printf("[");
-        printf("%.2lf,", i->makespan);
-        printf("%.2lf", i->workload);
-        printf("],");
-        printf("\n");
+//    evaluate_objective(i);
+//
+//        printf("[");
+//        printf("%.2lf,", i->makespan);
+//        printf("%.2lf", i->workload);
+//        printf("],");
+//        printf("\n");
 }
 
 void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
@@ -1074,24 +1032,16 @@ void greedy_for_communication()
 //        }
 //    }
 //    mp3_decoder
-    Collection[1].machine[0].push_back(3);
-    Collection[1].machine[0].push_back(2);
-    Collection[1].machine[0].push_back(10);
-    Collection[1].machine[0].push_back(13);
-    Collection[1].machine[0].push_back(5);
-    Collection[1].machine[0].push_back(1);
-    Collection[1].machine[1].push_back(0);
-    Collection[1].machine[1].push_back(4);
-    Collection[1].machine[1].push_back(6);
+    Collection[1].machine[2].push_back(0);
+    Collection[1].machine[2].push_back(1);
+    Collection[1].machine[2].push_back(6);
+    Collection[1].machine[2].push_back(4);
+    Collection[1].machine[2].push_back(3);
+    Collection[1].machine[2].push_back(5);
+    Collection[1].machine[1].push_back(2);
     Collection[1].machine[1].push_back(7);
-    Collection[1].machine[1].push_back(8);
-    Collection[1].machine[1].push_back(9);
-    Collection[1].machine[1].push_back(12);
-    Collection[1].machine[1].push_back(11);
-    evaluate_objective(&Collection[1]);
-    printf("我运行了\n");
-    printf("makespan=%.2lf,workload=%.2lf\n", Collection[1].makespan, Collection[1].workload);
-    exit(0);
+    Collection[1].machine[0].push_back(8);
+    Collection[1].machine[0].push_back(9);
     //h264_dep
 //        Collection[1].machine[0].push_back(0);
 //        Collection[1].machine[0].push_back(4);
@@ -1107,18 +1057,16 @@ void greedy_for_communication()
 //        Collection[1].machine[1].push_back(12);
 //        Collection[1].machine[1].push_back(5);
 //        Collection[1].machine[1].push_back(1);
-//    repair_segment(&Collection[1]);
-//
-//        for(int j = 0 ; j < m ; j ++){
-//            printf("第%d个机器: ", j);
-//            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end() ; iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
-//    evaluate_objective(&Collection[1]);
-//    printf("makespan=%.2lf,workload=%.2lf\n", Collection[1].makespan, Collection[1].workload);
-//    exit(0);
+    repair_segment(&Collection[1]);
+
+        for(int j = 0 ; j < m ; j ++){
+            printf("第%d个机器: ", j);
+            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end() ; iter ++){
+                printf("%d ", (*iter));
+            }
+            printf("\n");
+        }
+    evaluate_objective(&Collection[1]);
 //        Collection[1].machine[5].push_back(11);
 //        Collection[1].machine[6].push_back(7);
 //        Collection[1].machine[7].push_back(9);
@@ -1207,8 +1155,8 @@ void init()
     }
 
     //greedy_for_workload();
-    greedy_for_communication();
-//    greedy_with_topo();
+    //greedy_for_communication();
+    greedy_with_topo();
 //    printf("greedy.... done\n");
 
     for(int i = 1 ; i < pop*2 ; i ++)
@@ -1451,8 +1399,8 @@ void solve()
 int main()
 {
     srand(1);
-    freopen("TMNR.dat", "r", stdin);
-//    freopen("TMNR-rand1-lsnsga2-repair.txt", "w", stdout);
+    freopen("h264_14.dat", "r", stdin);
+    freopen("h264_14-rand1-lsnsga2-machine4-trim-lessDependent.txt", "w", stdout);
     solve();
     return 0;
 }

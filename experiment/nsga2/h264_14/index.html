@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <script src="jquery-1.11.3.min.js"></script>
+    <script src="echarts.min.js"></script>
+    <style type="text/css">
+    	.Xaxis {
+    		position: absolute;
+    		top: 30px;
+    		font-family: Helvetica,Arial,sans-serif;
+    		color: gray;
+    		left: 20px;
+    	}
+    	.Yaxis {
+    		position: absolute;
+    		bottom: 50px;
+    		font-family: Helvetica,Arial,sans-serif;
+    		color: gray;
+    		right: -20px;
+    	}
+    	.time {
+    		position: absolute;
+    		width: 80%;
+    		left: 0;
+    		right: 0;
+    		bottom: 0px;
+    		font-family: Helvetica,Arial,sans-serif;
+    		color: gray;
+    		margin: 0 auto;
+    		text-align: center;
+    	}
+    </style>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+        var arr = [[220730.00,87.00],
+[220730.00,87.00],
+[205740.00,139.00],
+[202796.00,269.00],
+[163763.00,627.00],
+[179496.00,291.00],
+[179496.00,291.00],
+[163763.00,627.00]];
+        var arr1 = [[180904.00,291.00],
+[220730.00,87.00],
+[163763.00,627.00],
+[163763.00,627.00],
+[203672.00,139.00],
+[180904.00,291.00]];
+        // 指定图表的配置项和数据
+        option = {
+	    tooltip : {
+	        trigger: 'axis',
+	        showDelay : 0,
+	        axisPointer:{
+	            show: true,
+	            type : 'cross',
+	            lineStyle: {
+	                type : 'dashed',
+	                width : 1
+	            }
+	        },
+	        zlevel: 1
+	    },
+	    legend: {
+	        data:['nsga-2','round-robin']
+	    },
+	    toolbox: {
+	        show : true,
+	        feature : {
+	            mark : {show: true},
+	            dataZoom : {show: true},
+	            dataView : {show: true, readOnly: false},
+	            restore : {show: true},
+	            saveAsImage : {show: true}
+	        }
+	    },
+	    xAxis : [
+	        {
+	            type : 'value',
+	            scale:true
+	        }
+	    ],
+	    yAxis : [
+	        {
+	            type : 'value',
+	            scale:true
+	        }
+	    ],
+	    series : [
+	        {
+	            name:'nsga-2',
+	            type:'scatter',
+	            large: true,
+	            symbolSize: 5,
+	            data: (function () {
+	                var d = [];
+	                var len = 8;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr[i][0],arr[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        },
+	        {
+	            name:'round-robin',
+	            type:'scatter',
+	            large: true,
+	            symbolSize: 5,
+	            data: (function () {
+	                var d = [];
+	                var len = 6;
+	                for(var i = 0 ; i < len ; i ++){
+	                	d.push([arr1[i][0],arr1[i][1]]);
+	                }
+	                //console.log(d)
+	                return d;
+	            })()
+	        }
+	    ]
+	};
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+        var Xaxis = $("<div class='Xaxis'></div>");
+        Xaxis.text("workload");
+        var Yaxis = $("<div class='Yaxis'></div>");
+        Yaxis.text("makespan");
+        var content = $("#main");
+        content.append(Xaxis);
+        content.append(Yaxis);
+        var timeDiv = $("<div class='time'></div>");
+        var time = "11.236s";
+        timeDiv.text("Time cost: " + time + "s");
+        content.append(timeDiv);
+    </script>
+</body>
+</html>

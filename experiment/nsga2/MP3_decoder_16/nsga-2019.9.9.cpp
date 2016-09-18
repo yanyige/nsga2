@@ -11,8 +11,8 @@
 using namespace std;
 
 const int MAXN = 2000;
-const int number_of_tasks = 14;
-const int number_of_machines =2;//改机器时要改实例8,14
+const int number_of_tasks = 16;
+const int number_of_machines =3;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
@@ -99,6 +99,7 @@ double abs(double t)
 {
     return t>0?t:-t;
 }
+
 void evaluate_objective(Individual *i)
 {
     vector<int>:: iterator iter;
@@ -213,12 +214,7 @@ void evaluate_objective(Individual *i)
 //                    }
 //                }
                // E[ii]+=Lstart;
-               for(int kk=0;kk<n;kk++){
-                    if(c[position][kk]>0 && (task_in_machine[kk] != task_in_machine[position])){
-                        E[ii]+=2;
-                        break;
-                    }
-               }
+               E[ii]+=2;
                 it++;
                 for(int jj=0; jj<n; jj++)
                 {
@@ -521,20 +517,7 @@ void gamutation(Individual *individual)
     }
 
     int temp = rand() % 2;
-    if(temp == 0)
-    {
-        // printf("...");
-        light_perturbation(segment, size_of_segment, interval);
-        // printf("...");
-    }
-    else
-    {
-        //  printf("...");
-        heavy_perturbation(segment, size_of_segment, interval);
-        //printf("...");
-
-    }
-
+    light_perturbation(segment, size_of_segment, interval);
     for(int j = 0 ; j < m ; ++ j)
     {
         vector<int>().swap(individual->machine[j]);
@@ -659,51 +642,6 @@ void crowdDistance(int now_rank)
         Front[now_rank].push_back(front_individuals[i]);
     }
 }
-void Swap_localsearch(Individual *individual)
-{
-    Individual neighbor;
-    Individual bestlocal;
-    copy_individual(&bestlocal,individual);
-    copy_individual(&neighbor,individual);
-    evaluate_objective(&bestlocal);
-    //int flag=0;//最优解是否被更新
-    vector<int>::iterator iter;
-    vector<int>::iterator iter2;
-    int temp;
-    for(int j=0; j<m; j++)
-    {
-        //printf("%d\n",j);
-        for(iter=neighbor.machine[j].begin(); iter!=neighbor.machine[j].end(); ++iter)
-        {
-
-            for(int k=0; k<m; k++)
-            {
-                for(iter2=neighbor.machine[k].begin(); iter2!=neighbor.machine[k].end(); ++iter2)
-                {
-                    if((*iter)!=(*iter2))
-                    {
-                        //copy_individual(&neighbor,individual);
-                        temp=*iter;
-                        *iter=*iter2;
-                        *iter2=temp;
-                        evaluate_objective(&neighbor);
-                        if(neighbor.makespan<=bestlocal.makespan&&neighbor.workload<=bestlocal.workload)
-                        {
-                            if(!(neighbor.makespan==bestlocal.makespan&&neighbor.workload==bestlocal.workload))
-                            {
-                                copy_individual(&bestlocal,&neighbor);
-                            }
-                        }
-                        copy_individual(&neighbor,individual);
-                    }
-                }
-            }
-        }
-
-
-    }
-    copy_individual(individual,&bestlocal);
-}
 
 void insertMachine(Individual *i, int a, int b, int c) { // a = taskIndex[nowPoint], b = nowPoint, c = temp
     vector<int>:: iterator iter;
@@ -814,27 +752,6 @@ void repair_segment(Individual *i) {
 //            }
         }
     }
-    evaluate_objective(i);
-
-        printf("[");
-        printf("%.2lf,", i->makespan);
-        printf("%.2lf", i->workload);
-        printf("],");
-        printf("\n");
-}
-
-void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
-    vector<int>::iterator iter;
-    int temp = individual->machine[nowM][nowPos];
-    individual->machine[nowM][nowPos] = individual->machine[toM][toPos];
-    individual->machine[toM][toPos] = temp;
-//    for(int j = 0 ; j < m ; j ++){
-//        printf("第%d个机器: ", j);
-//        for(iter = individual->machine[j].begin(); iter != individual->machine[j].end() ; iter ++){
-//            printf("%d ", (*iter));
-//        }
-//        printf("\n");
-//    }
 }
 
 bool check_machine(Individual *individual) {
@@ -874,59 +791,6 @@ bool check_machine(Individual *individual) {
     }
 }
 
-void swap_localsearch(Individual *individual) {
-    /***************initialize******************/
-    int flag[n];
-    int k = 1;
-    int kMax = n / 3;
-    int nowMachine;
-    int nowPos;
-    int toMachine;
-    int toPos;
-    int segmentSize[m];
-    Individual temp_individual = *individual;
-    Individual best_individual = *individual;
-    for(int l = 0 ; l < m ; l ++) {
-        segmentSize[l] = temp_individual.machine[l].size();
-    }
-    /******************done*********************/
-    while(k <= kMax) {
-        evaluate_objective(&best_individual);
-        double makespan = best_individual.makespan;
-        double workload = best_individual.workload;
-
-        // random generate a task
-        nowMachine = rand() % m;
-        if(segmentSize[nowMachine] == 0) continue;
-        nowPos = rand() % segmentSize[nowMachine];
-        // task done
-        // find best neighbor
-        for(toMachine = 0 ; toMachine < m ; toMachine ++) {
-            if(segmentSize[toMachine]) for(toPos = 0 ; toPos < segmentSize[toMachine] ; toPos ++) {
-                if(nowMachine != toMachine || nowPos != toPos) {
-                    swap_machine(&temp_individual, nowMachine, nowPos, toMachine, toPos);
-                    if(check_machine(&temp_individual)) { //如果符合条件
-                        evaluate_objective(&temp_individual);
-
-                        if(temp_individual.makespan < makespan && temp_individual.workload < workload) {
-                            makespan = temp_individual.makespan;
-                            workload = temp_individual.workload;
-                            best_individual = temp_individual;
-                        }
-                    }
-                    temp_individual = *individual;
-                }
-            }
-        }
-        k ++;
-        if(best_individual.makespan < individual->makespan && best_individual.workload < individual->workload) {
-            individual = &best_individual;
-            k = 1;
-        }
-    }
-
-}
-
 void make_new_pop(Individual individuals[], int length)
 {
 
@@ -957,29 +821,11 @@ void make_new_pop(Individual individuals[], int length)
         if(temp >= 0 && temp < 9) {}
         else
         {
-            //        printf("4新生成机器%d\n",i);
             gamutation(&new_individual);
-            //        printf("5新生成机器%d\n",i);
         }
-//        printf("temp = %d\n", temp);
-//        printf("新生成机器%d\n",i);
-//        for(int j = 0 ; j < m ; j ++){
-//            printf("第%d个机器: ", j);
-//            for(iter = new_individual.machine[j].begin(); iter != new_individual.machine[j].end() ; iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
-          //Swap_localsearch(&new_individual);
 
         repair_segment(&new_individual);
-        swap_localsearch(&new_individual);
         copy_individual(&individuals[length + i], &new_individual);
-
-//        gacrossover(target1, target2, &new_individual);
-//        gamutation(&new_individual);
-
-
     }
 }
 
@@ -1013,146 +859,6 @@ double get_min_id_in_array(double arr[])
     return min_id;
 }
 
-void greedy_for_workload()
-{
-    double now_span[MAXN];
-    memset(now_span, 0, sizeof(now_span));
-    for(int i = 0 ; i < n ; i ++)
-    {
-        time_in_machine[i].id = i;
-        time_in_machine[i].time = t[0][i];
-    }
-    qsort(time_in_machine, n, sizeof(time_in_machine[0]), cmp3);
-    for(int i = 0 ; i < n ; i ++)
-    {
-        if(i >= 0 && i < m)
-        {
-            Collection[0].machine[i].push_back(time_in_machine[i].id);
-            now_span[i] += time_in_machine[i].time;
-        }
-        else
-        {
-            int pos = get_min_id_in_array(now_span);
-            Collection[0].machine[pos].push_back(time_in_machine[i].id);
-            now_span[pos] += time_in_machine[i].time;
-        }
-    }
-}
-
-void greedy_for_communication()
-{
-    vector<int>::iterator iter;
-    bool flag;
-    int machine_number[MAXN];
-    memset(machine_number, 0, sizeof(machine_number));
-    int max_number = n / m;
-//    for(int i = 0 ; i < n ; i ++){
-//        flag = false;
-//        for(int j = 0 ; j < m ; j ++){
-//            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); ++ iter){
-//
-//                if(c[i][(*iter)] > 0 && machine_number[j] <= max_number){
-//                    Collection[1].machine[j].push_back(i);
-//                    machine_number[j] ++;
-//                    flag = true;
-//                    break;
-//                }
-//            }
-//            if(flag) break;
-//        }
-//        if(!flag){
-//            int pos;
-//            int minn = inf;
-//            for(int k = 0 ; k < m ; k ++){
-//                if(machine_number[k] < minn && machine_number[k] <= max_number){
-//                    minn = machine_number[k];
-//                    pos = k;
-//                }
-//            }
-//            Collection[1].machine[pos].push_back(i);
-//            machine_number[pos] ++;
-//        }
-//    }
-//    mp3_decoder
-    Collection[1].machine[0].push_back(3);
-    Collection[1].machine[0].push_back(2);
-    Collection[1].machine[0].push_back(10);
-    Collection[1].machine[0].push_back(13);
-    Collection[1].machine[0].push_back(5);
-    Collection[1].machine[0].push_back(1);
-    Collection[1].machine[1].push_back(0);
-    Collection[1].machine[1].push_back(4);
-    Collection[1].machine[1].push_back(6);
-    Collection[1].machine[1].push_back(7);
-    Collection[1].machine[1].push_back(8);
-    Collection[1].machine[1].push_back(9);
-    Collection[1].machine[1].push_back(12);
-    Collection[1].machine[1].push_back(11);
-    evaluate_objective(&Collection[1]);
-    printf("我运行了\n");
-    printf("makespan=%.2lf,workload=%.2lf\n", Collection[1].makespan, Collection[1].workload);
-    exit(0);
-    //h264_dep
-//        Collection[1].machine[0].push_back(0);
-//        Collection[1].machine[0].push_back(4);
-//        Collection[1].machine[0].push_back(6);
-//        Collection[1].machine[0].push_back(7);
-//        Collection[1].machine[0].push_back(8);
-//        Collection[1].machine[0].push_back(11);
-//        Collection[1].machine[0].push_back(10);
-//        Collection[1].machine[1].push_back(3);
-//        Collection[1].machine[1].push_back(2);
-//        Collection[1].machine[1].push_back(9);
-//        Collection[1].machine[1].push_back(13);
-//        Collection[1].machine[1].push_back(12);
-//        Collection[1].machine[1].push_back(5);
-//        Collection[1].machine[1].push_back(1);
-//    repair_segment(&Collection[1]);
-//
-//        for(int j = 0 ; j < m ; j ++){
-//            printf("第%d个机器: ", j);
-//            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end() ; iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
-//    evaluate_objective(&Collection[1]);
-//    printf("makespan=%.2lf,workload=%.2lf\n", Collection[1].makespan, Collection[1].workload);
-//    exit(0);
-//        Collection[1].machine[5].push_back(11);
-//        Collection[1].machine[6].push_back(7);
-//        Collection[1].machine[7].push_back(9);
-//        Collection[1].machine[7].push_back(12);
-
-//    double span = 0;
-//    for(int j = 0 ; j < number_of_machines ; j ++){
-//        double tspan = 0;
-//        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); ++ iter){
-//            tspan += t[j][(*iter)];
-//            for(int jj = 0 ; jj < number_of_machines ; jj ++){
-//                if(jj != j){
-//                    for(vector<int>::iterator jter = Collection[1].machine[jj].begin(); jter != Collection[1].machine[jj].end(); ++ jter){
-//                        Collection[1].communication_cost += c[(*iter)][(*jter)];
-//                    }
-//                }
-//            }
-//        }
-//        printf("tspan = %.2lf\n", tspan);
-//        span += abs(tspan - avg);
-//    }
-//    evaluate_objective(&Collection[1]);
-//    printf("span = %.2lf\n", Collection[1].maxspan);
-//    printf("comm = %.2lf\n", Collection[1].communication_cost);
-//    for(int j = 0 ; j < m ; j ++){
-//        printf("第%d台机器的序列", j);
-//        for(vector<int>::iterator iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end(); iter ++){
-//            printf("%d ", (*iter));
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
-//    getchar();getchar();
-}
 
 void greedy_with_topo() {
     int in[n];
@@ -1206,12 +912,7 @@ void init()
         }
     }
 
-    //greedy_for_workload();
-    greedy_for_communication();
-//    greedy_with_topo();
-//    printf("greedy.... done\n");
-
-    for(int i = 1 ; i < pop*2 ; i ++)
+    for(int i = 0 ; i < pop*2 ; i ++)
     {
         flag_machine.clear();
         while(!segment.empty())
@@ -1248,27 +949,17 @@ void init()
             }
             kk --;
         }
-//        printf("生成的序列是:\n");
-//        while(!segment.empty()){
-//            printf("%d ", segment.top());
-//            segment.pop();
-//        }
-//        printf("*********************\n");
         kkk = 0;
         for(iiter = interval.begin(); iiter != interval.end(); iiter ++)
         {
-//            printf("interval中的值=%d\n", (*iiter));
             if(iiter == interval.begin())
             {
                 kk = (*iiter);
             }
             else
             {
-//                printf("intervar=%d kk=%d\n", (*iiter), kk);
                 kk = (*iiter) - kk;
             }
-//            kk = (*iiter);
-//            printf("区间大小1=%d\n", kk);
             tempkk = kk;
             while(tempkk --)
             {
@@ -1287,26 +978,13 @@ void init()
             segment.pop();
         }
 
-//        printf("repair... begin\n");
         repair_segment(&Collection[i]);
-//        printf("repair... done\n");
-
-//        for(int j = 0 ; j < m ; j ++){
-//            printf("第%d台机器的序列", j);
-//            for(iter = Collection[i].machine[j].begin(); iter != Collection[i].machine[j].end(); iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
-//        printf("\n");
-//        getchar();
     }
 }
 
 //Main Process
 void solve()
 {
-
     scanf("%d%d", &pop, &gen);
     //所有任务在不同机器上执行时间相同
     for(int i=0; i<n; i++)
@@ -1359,10 +1037,7 @@ void solve()
     }
 
     int t = 0;
-    printf("init...begin\n");
     init();
-    printf("init...done\n");
-
     while(t < gen)
     {
         printf("*****************************t=%d*****************************\n", t);
@@ -1371,20 +1046,11 @@ void solve()
         int now_rank = 1;
 
         make_new_pop(Collection, pop);
-        //printf("t2=%d\n", t);
         for(int i = 0 ; i < pop*2 ; i ++)
         {
             evaluate_objective(&Collection[i]);
         }
-        //printf("evaluate done ...\n");
         non_domination_sort(Collection, pop * 2, false);
-//         for(int i = 0 ; i < pop*2 ; i ++){
-//            printf("i=%d\n", i);
-//            printf("makespan = %.2lf\n", Collection[i].makespan);
-//            printf("workload = %.2lf\n", Collection[i].workload);
-//            printf("rank = %d\n", Collection[i].front);
-//        }
-
         while(1)
         {
             if(P_size + Front[now_rank].size() > pop)
@@ -1411,23 +1077,8 @@ void solve()
                 P_size ++;
             }
         }
-
-//            for(int i = 0 ; i < pop*2 ; i ++){
-//                evaluate_objective(&Collection[i]);
-//                printf("i=%d\n", i);
-//                printf("maxspan = %.2lf\n", Collection[i].maxspan);
-//                printf("communicate = %.2lf\n", Collection[i].communication_cost);
-//                printf("rank = %d\n", Collection[i].front);
-//            }
         t ++;
     }
-//    for(int i = 0 ; i < pop ; i ++){
-//
-//        printf("[");
-//        printf("%.2lf,", Collection[i].maxspan);
-//        printf("%.2lf,rank=%d", Collection[i].communication_cost, Collection[i].front);
-//        printf("],", Collection[i].front);
-//    }
 
     non_domination_sort(Collection, pop * 2, true);
 
@@ -1450,9 +1101,9 @@ void solve()
 //void get_segment_array(Individual *i, int **)
 int main()
 {
-    srand(1);
-    freopen("TMNR.dat", "r", stdin);
-//    freopen("TMNR-rand1-lsnsga2-repair.txt", "w", stdout);
+    srand(0);
+    freopen("MP3_decoder_16.dat", "r", stdin);
+//    freopen("MP3-rand0-nsga.txt", "w", stdout);
     solve();
     return 0;
 }

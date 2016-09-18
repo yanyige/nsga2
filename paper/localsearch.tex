@@ -1,0 +1,139 @@
+\section{Multi-objective Hybrid Algorithm \label{se:loc}}
+%As we know, genetic algorithm(GA) is a population-based heuristic with a strong global search capacity. However,the lack of intensive search weakens the advantage of genetic algorithms. Soon afterwards, \cite{moscato1992memetic} proposed a memetic algorithm and integrates the local search in genetic algorithms to improve the exploitation ability.
+To solve the bi-objective optimization problem discussed above, a natural idea is to translate it into a single objective optimization problem, by assigning different weighted values to the goals, and solve it using some commercial tools such as CPLEX\footnote{https://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/}. But for the lack of sufficient information about the relation of the two objectives, this kind of translation usually can not obtain the optimum solutions. Another shortcoming is that though CPLEX is efficient when solving small scale problems, yet can not scale up for large scale applications.
+
+To obtain Pareto optimal for large scale systems, we propose a novel algorithm framework, called Multi-objective hybrid algorithm (MOHA), by hybridizing the genetic algorithm with a Pareto local search. Specifically, the algorithm consists of three main parts, i.e. initialization component, evolution process component, and Pareto local search component.
+
+
+\subsection{Initialization}
+The initialization phase plays an important role in the effectiveness of the algorithm. The reason is that a diversified population could provide a greater chance to find the optimal, yet would result in slow convergence. While an intensified population could converge fast, yet would make the algorithm trap into local optimum easily. Accordingly, in our algorithm, a two-mode construction procedure is proposed (Alg1.line 1). More precisely, in the first mode, i.e., random mode, candidate solutions would be generated randomly to cover a more comprehensive solution domain; in the second mode, i.e., greedy mode, a greedy individual would be generated to store problem-heuristic information using the following strategy:
+\begin{enumerate}
+
+\item Let $|T|$ be the number of tasks, $|P|$ be the number of processors,  and $aver=\sum^{|T|}_{i=1}\delta_i/|P|$ be the supposed average workload on each processor.
+\item For each task $t$,  in-degree $In(t)$ and out-degree $Out(t)$ are calculated according to the dependences of tasks.
+\item For the task whose $In(t)$ is zero, it is pushed into the execution sequence and the corresponding $Out(t)$ is decreased by 1. Loop continues until all the tasks are assigned. One thing to be noticed is that the workload of each processor should be around $aver$.
+\end{enumerate}
+
+In this way, the algorithm can obtain an initial population $S0$ with a balance between the diversified population and the convergence. After that, $S0$ will be divided into several sub-populations $(F_1,F_2,...)$ by the \textit{non-dominated sorting strategy} (Alg1.line 2-4). To evaluate the quality of solutions, we introduce the definitions of dominating relationships between solution $A$ and solution $B$.
+
+\begin{defi}
+ $A$ dominates $B$ ($ A \preceq B$), \textit{iff} all the objective functions of $A$ are no worse than $B$.
+\end{defi}
+\begin{defi} $A$ is non-dominated, \textit{iff} {$ \nexists B, B\preceq A $}.
+\end{defi}
+Generally speaking, the \textit{non-dominated sorting} strategy is to divide the current population $Pop$ into several sub-populations $(F_1,F_2,...)$. Each sub-population $F_i$ contains a partial task sequence that is non-dominated by other parts except those  sorted in front of $F_i$.
+
+\begin{algorithm}
+\caption{Multi-objective Hybrid Algorithm}
+\label{alg1}
+\begin{algorithmic} [1]
+\State  $S_0 = Construct()$
+\State  $(F_1,F_2,...)=$ Non-Dominated-Sort($S_0$)
+\State	$S_0 = (F_1,F_2,...)$
+\State  $S_E$ = $F_1$
+\ForAll{$F_i \in S_0$}
+\State Crowding-Distance-Assignment($F_i$)
+\EndFor
+\State set $t=0$
+\While{stopping criterion not satisfied}
+\State $Q_t=$ Generate-Child-Population($S_t$)
+\State $R_t = R_t \cup Q_t$
+\State $(F_1,F_2,...)=$ Non-Dominated-Sort($R_t$)
+\State $F = (F_1,F_2,...)$
+\State $S_{t+1} = \phi $
+\State $i=1$
+\While{ $\left|S_{t+1}\right|+\left|F_i\right| < N$}
+\State Crowding-Distance-Assignment($F_i$)
+\State $S_{t+1} = S_{t+1} \cup F_i$
+\State $i=i+1$
+\EndWhile
+\State sort $F_i$ on crowding distances
+\State $S_{t+1} = S_{t+1} \cup F_i\left[1:(N-|S_{t+1}|)\right]$
+\State $t=t+1$
+\EndWhile
+\State return $F_1$
+\end{algorithmic}
+\end{algorithm}
+
+For each sub-population $F_i$, individuals are sorted by the \textit{crowded comparison} strategy with a descending order (Alg1.line 5-6). Specifically, the \textit{crowding distance} of the two boundary individuals are set to be $ \infty $ to maintain a diversity. Given a candidate solution $S$, let $S_x$, $S_y$ be the adjacent individuals of $S$. Then the \emph{crowding distance} of $S$ is calculated as follows:
+\begin{equation}
+ Dis(S)=\sum^{m}_{k=1}\mid S_x.f_k-S_y.f_k\mid
+\end{equation}
+ where $m$ denotes the number of objectives and $f_k$ denotes the value of objective $k$. This strategy ensures a wider distribution of individuals so that too crowded solutions will be ignored for the next evolution.
+
+\subsection{Evolution Process}
+
+After the initial phase, the evolution process will be called repeatedly to generate the Pareto front (Alg1.line 7-22). In this phase, a new population of candidate solutions will be generated by the procedure \textit{Generate-Child-Population()} (Alg1.line 9-10). Then, the candidate solutions will be sorted by the \textit{non-dominated sorting} strategy (Alg1. line 11-12). To choose the best N solutions as the beginning of next iteration, $(F_1,F_2,...)$ is orderly added into  $S_t+1$ (Alg1. line 15-18). Note that the solutions in $F_i$ with larger crowding distances have a higher priority to be selected (Alg1. line 19-21).
+
+\begin{algorithm}
+\caption{Generate-Child-Population($S$)}
+\label{alg2}
+\begin{algorithmic} [1]
+\State $Q=\phi$
+\While {$|Q|!=|S|$}
+\State ($S_x$,$S_y$)= Stochastic-Selection()
+\State $q=$crossover$(S_x,S_y)$
+\If {$ rand\geq 0.5 $ and $ rand\leq1 $}
+\State Light-Perturbation( $ q $ )
+\ElsIf {$ rand \geq 0 $ and $ rand<0.5 $}
+\State Heavy-Perturbation($ q $)
+\EndIf
+\State $q\star = $Pareto-Localsearch($q$)
+\State update($S_E,q\star$)
+\State $Q=Q \cup q\star$
+\EndWhile
+\State return $Q$
+\end{algorithmic}
+\end{algorithm}
+
+Obviously, the procedure \textit{Generate-Child-Population()} plays a key role in this process (Algortihm 2). In this procedure, firstly, two parent solutions will be selected from both the current population and the elitist population (Alg2.line 3). Then, a crossover operator (Alg2.line 4) is applied to change the information between these two chosen parents, which means that the position of each task in the offspring is picked randomly from one of its parents. Moreover, for the sake of increasing the diversity of solutions, two perturbation operators are performed in mutation process (Alg2.line 5-8). The former is to swap two different tasks in any processors and the latter is to insert one task into the position of a different processor. After that, a Pareto local search procedure (Alg2.line 9)  will be called, which we will discuss in the next subsection.
+%Algorithm \ref{alg2} is the main process to produce the offspring.
+
+
+\subsection{Pareto Local Search}
+To enhance the intensive searching capacity and accelerate the convergence of our algorithm,  we  introduce the Pareto local search procedure (Algorithm 3). It should be pointed out that though infeasible solutions are allowed in genetic process for more combinations, these infeasible solutions need to be repaired to feasible solutions for sparing the resource (Alg3.line 3).
+Let $ X=(x_1,x_2,...x_T) $ be the current executing sequence where \textit{T} is the number of total tasks. For each task $ x_i $, we use $ dp(x_i)$ to denote the number of tasks that depend on $ x_i $, and $ dpd(x_i)$ to denote the set of tasks that depend on $ x_i $. The main idea of \textit{repair} operator is to repeatedly check the feasibility of executing tasks and ensure that each task begins to execute later than all its dependent tasks.
+
+%Assume that $ X=(x_1,x_2,...x_T) $ is the current executing sequence and \textit{T} is the number of total tasks. As for each task $ x_i $, $ (i=1,2,...T)$, the number of its remainder tasks to depend on is indicated as $ dp(x_i)$ and the tasks who depend on it is presented as $ dpd(x_i)$. $ dp(x_i)$ will decrease by 1 if one of its dependent tasks executes earlier than it. For an infeasible solution $ X'=(x'_1,x'_2,...,x'_T) $ that just appears after genetic process, a \textit{repair} operation is applied to revise it(Alg2. line 9). Firstly, the tasks will be checked in sequence whether or not it can be executed right now. If the task $ x'_j $ is able to continue, $ dp(dpd(x'_j)) $ decreases by 1, otherwise, the most costly task that $ x'_j $ depends on is inserted in front of $ x'_j $.Then $ dp(x'_j)$ decreases by 1. Again, the newly-inserted task is checked as above.
+
+Another important factor in the Pareto local search procedure is the neighborhood structure. Given a candidate solution \textit{S} and two tasks $r$ and $t$, if we only swap the positions of the tasks $r$, $t$ and fix the positions of other tasks, we can obtain a neighbor solution of \textit{S}. We then use \textit{neighbor($S_t$)} to denote the set of neighbors of \textit{S} by swapping $t$ with other tasks. In the main Pareto local search loop (Alg3.line 4-11), the algorithm randomly selects a task $t$ of solution $S$ (Alg3.line 5) and tries to find a solution that can dominate $S$ from its neighborhood space (Alg3.line 6). Specifically, if \textit{neighbor($S_t$)} is better than \textit{S} based on Pareto optimal evaluation, it will replace \textit{S} for further exploitation and $k$ is set 1 (Alg3.line 7-9). Otherwise, another task will be selected and $k$ will be increased by 1 (Alg3.line 10-11). This process will continue until $k$ reaches the maximum limit.
+%Algorithm \ref{alg3} shows the pareto local search phase.
+
+
+%As a supplement, infeasible solutions are allowed in genetic process for more combinations. But before local search stage, the solution should be repaired if it is not feasible, which helps spare the resource.
+
+\subsection{The Effectiveness of MOHA}
+%The solutions may not be effective after the two procedures above for the reason that the priorities of tasks result in an infinite waiting.
+In this section, we prove the effectiveness of MOHA for the problem of mapping and scheduling optimization for MPSoCs.
+
+\textbf{(Lemma 1) } \textit{The sufficient condition for a feasible solution of MPSoC is that for each} $ x_i \in X=(x_1,x_2,...x_T)$, $ (i=1,2,...T)$, $ dp(x_i)=0$.
+
+\textit{proof.}
+$ dp(x_i)=0 $ for $ (i=1,2,...T)$  means that the current task $x_i$ has no dependent tasks or its dependent tasks have all been executed before it. In this situation, $x_i$ can go on if the relevant processor is idle. That implies that no tasks will be trapped into infinite waiting during the whole execution. It illustrates the feasibility of the solution.
+
+\textbf{(Theorem 1) } \textit{Given an MPSoC problem, solutions generated by MOHA are feasible. }
+
+\textit{proof}
+The initial value of $ dp(x_i),(i=1,2,...T)$ is assigned according to the number of its dependent tasks. Once a task is executed, $ dp(dpd(x_i)) $ is decreased by 1. When the task $ x_i$ needs to be executed and $dp(x_i)>0$, the \textit{repair} operator of MOHA puts one of its dependent tasks just in front of it to decrease $dp(x_i)$. It loops until the values $dp(x_i)$ of all tasks are 0. According to \textit{Lemma 1}, the solutions are feasible on the MPSoC problem.
+
+
+\begin{algorithm}
+\caption{Pareto-Localsearch($S$)}
+\label{alg3}
+\begin{algorithmic} [1]
+\State $k=1$
+\State $kmax=2*n$
+\State repair($ S $)
+\While {$k\leq kmax$}
+\State $t$= Random-Task-selection()
+\State $ Nh(S_t) $ = Neighborhood$(S_t)$
+\If    {$ Nh(S_t) $ dominates $ S $}
+\State $S$=$Nh(S_t)$
+\State $k=1$
+\Else
+\State $k=k+1$
+\EndIf
+\EndWhile
+\State return $S$
+\end{algorithmic}
+\end{algorithm}

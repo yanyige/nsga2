@@ -16,7 +16,7 @@ const int number_of_machines =2;//改机器时要改实例8,14
 const int m = number_of_machines;
 const int n = number_of_tasks;
 const int inf = 0x3f3f3f3f;
-const int cycle=3;//周期数
+const int cycle=2;//周期数
 //*******
 //**pop - Population size
 //**gen - Total number of generations
@@ -99,6 +99,7 @@ double abs(double t)
 {
     return t>0?t:-t;
 }
+
 void evaluate_objective(Individual *i)
 {
     vector<int>:: iterator iter;
@@ -189,6 +190,7 @@ void evaluate_objective(Individual *i)
                 {
                     if((c[kk][position]>0)&&(task_in_machine[kk]!=task_in_machine[position]))
                     {
+                        printf("c[%d][%d] = %.2lf\n",kk, position, c[kk][position]);
                         ltemp=taoend[flag_end[ii]][kk]+c[kk][position]+2;
                         if(ltemp>Lstart)
                         {
@@ -213,12 +215,13 @@ void evaluate_objective(Individual *i)
 //                    }
 //                }
                // E[ii]+=Lstart;
-               for(int kk=0;kk<n;kk++){
-                    if(c[position][kk]>0 && (task_in_machine[kk] != task_in_machine[position])){
-                        E[ii]+=2;
-                        break;
-                    }
-               }
+//               for(int kk=0;kk<n;kk++){
+//                if(c[position][kk]>0 && (task_in_machine[kk] != task_in_machine[position])){
+                    E[ii]+=2;
+//                    break;
+//                }
+//               }
+
                 it++;
                 for(int jj=0; jj<n; jj++)
                 {
@@ -251,13 +254,13 @@ void evaluate_objective(Individual *i)
         //printf("\n");
         //  }
     }
-//    for(int ii=0; ii<cycle; ii++)
-//    {
-//        for(int jj=0; jj<n; jj++)
-//        {
-//            printf("T[%d][%d]=%lf\n",ii,jj,tao[ii][jj]);
-//        }
-//    }
+    for(int ii=0; ii<cycle; ii++)
+    {
+        for(int jj=0; jj<n; jj++)
+        {
+            printf("T[%d][%d]=%lf\n",ii,jj,tao[ii][jj]);
+        }
+    }
 
 
     for(int jj=0; jj<m; jj++)
@@ -814,13 +817,13 @@ void repair_segment(Individual *i) {
 //            }
         }
     }
-    evaluate_objective(i);
-
-        printf("[");
-        printf("%.2lf,", i->makespan);
-        printf("%.2lf", i->workload);
-        printf("],");
-        printf("\n");
+//    evaluate_objective(i);
+//
+//        printf("[");
+//        printf("%.2lf,", i->makespan);
+//        printf("%.2lf", i->workload);
+//        printf("],");
+//        printf("\n");
 }
 
 void swap_machine(Individual *individual, int nowM, int nowPos, int toM, int toPos) {
@@ -1074,24 +1077,20 @@ void greedy_for_communication()
 //        }
 //    }
 //    mp3_decoder
+    Collection[1].machine[0].push_back(0);
+    Collection[1].machine[0].push_back(4);
+    Collection[1].machine[0].push_back(6);
     Collection[1].machine[0].push_back(3);
-    Collection[1].machine[0].push_back(2);
+    Collection[1].machine[0].push_back(7);
+    Collection[1].machine[0].push_back(8);
     Collection[1].machine[0].push_back(10);
-    Collection[1].machine[0].push_back(13);
-    Collection[1].machine[0].push_back(5);
-    Collection[1].machine[0].push_back(1);
-    Collection[1].machine[1].push_back(0);
-    Collection[1].machine[1].push_back(4);
-    Collection[1].machine[1].push_back(6);
-    Collection[1].machine[1].push_back(7);
-    Collection[1].machine[1].push_back(8);
+    Collection[1].machine[0].push_back(11);
+    Collection[1].machine[1].push_back(2);
     Collection[1].machine[1].push_back(9);
     Collection[1].machine[1].push_back(12);
-    Collection[1].machine[1].push_back(11);
-    evaluate_objective(&Collection[1]);
-    printf("我运行了\n");
-    printf("makespan=%.2lf,workload=%.2lf\n", Collection[1].makespan, Collection[1].workload);
-    exit(0);
+    Collection[1].machine[1].push_back(13);
+    Collection[1].machine[1].push_back(5);
+    Collection[1].machine[1].push_back(1);
     //h264_dep
 //        Collection[1].machine[0].push_back(0);
 //        Collection[1].machine[0].push_back(4);
@@ -1107,18 +1106,18 @@ void greedy_for_communication()
 //        Collection[1].machine[1].push_back(12);
 //        Collection[1].machine[1].push_back(5);
 //        Collection[1].machine[1].push_back(1);
-//    repair_segment(&Collection[1]);
-//
-//        for(int j = 0 ; j < m ; j ++){
-//            printf("第%d个机器: ", j);
-//            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end() ; iter ++){
-//                printf("%d ", (*iter));
-//            }
-//            printf("\n");
-//        }
-//    evaluate_objective(&Collection[1]);
-//    printf("makespan=%.2lf,workload=%.2lf\n", Collection[1].makespan, Collection[1].workload);
-//    exit(0);
+    repair_segment(&Collection[1]);
+
+        for(int j = 0 ; j < m ; j ++){
+            printf("第%d个机器: ", j);
+            for(iter = Collection[1].machine[j].begin(); iter != Collection[1].machine[j].end() ; iter ++){
+                printf("%d ", (*iter));
+            }
+            printf("\n");
+        }
+    evaluate_objective(&Collection[1]);
+    printf("1=%.2lf 2=%.2lf \n", Collection[1].makespan, Collection[1].workload);
+    exit(0);
 //        Collection[1].machine[5].push_back(11);
 //        Collection[1].machine[6].push_back(7);
 //        Collection[1].machine[7].push_back(9);
@@ -1451,7 +1450,7 @@ void solve()
 int main()
 {
     srand(1);
-    freopen("TMNR.dat", "r", stdin);
+    freopen("h264_14.dat", "r", stdin);
 //    freopen("TMNR-rand1-lsnsga2-repair.txt", "w", stdout);
     solve();
     return 0;

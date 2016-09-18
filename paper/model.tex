@@ -1,0 +1,150 @@
+\section{Constraint formulations\label{se:ilp}}
+In this section, for the problem of mapping and scheduling of an application on certain platforms, we formalize it as an integer linear programming model, which is the input of our algorithm.
+The model mainly constructs constraints on scheduling, with respect to computation effort.
+ To measure the introduced communication cost for workload balance and its effect to the makespan, we also consider the inter-processor communication in the optimization of the two objectives. To simplify the modelling, we assume that a task can start execution once the corresponding communication is finished. 
+
+\subsection{Parameters and variables}
+Given a model $G=\langle T, E\rangle$ and a set of processors $P$, the input parameters to the ILP model is summarized in Table \ref{tab:par}.
+\begin{table}[t]\centering
+\caption{Input of the ILP model\label{tab:par}}
+\begin{tabular}{ll}\hline
+Notation & Definition \\\hline
+	 $N$ & The number of executions for every task \\
+	%$M$ & A big enough integer\\
+	$a_{i,k}$ & Whether task $t_i$ can be mapped to processor $p_k$\\
+	$d_{i,j}$ & Precedence relation between tasks $t_i$ and $t_j$\\
+	 $c_{i,j}$ & The size of data transfer from task $t_i$ to $t_j$\\
+	$\delta{i}$& The amount of work for task $t_i$\\
+	$\eta$ & The cost for communication initialization\\
+	\hline
+\end{tabular}	
+\end{table}
+
+With the input parameters, the mapping and scheduling steps consist of 1) allocating each task to a unique processor; 2) scheduling the tasks mapped to different processors.
+ Then the following decision variables can completely capture the allocation and scheduling information.
+ \begin{itemize}
+	\item $m_{i,k}$:  shows whether task $t_i$ is mapped to processor $p_k$;
+	\item $q_{k,i,j}$: the execution sequence between tasks $t_i$ and $t_j$ on $p_k$;	
+	\item $\tau^u_{i}$: the start time of task $t_i$ at $u$th iteration
+	%\item $\Delta$: the makespan for all tasks finishing all iterations;	
+\end{itemize}
+To facilitate the modelling of constraints, we introduce the following auxiliary variables:
+%\begin{itemize}
+	1) $b_{i,j}$: indicates whether tasks $t_i$ and $t_j$ are mapped to the same processor;	2) $bp_{k,i,j}$: indicates whether tasks $t_i$ and $t_j$ are mapped to processor $p_k$;
+	3) $o_{i,j}$: indicates whether inter-processor communication exists between tasks $t_i$ and $t_j$.
+%\end{itemize}
+These variables are used to check the existence of communication cost and the precedence executing sequence of tasks on same processors.
+
+\subsection{Constraints}
+To encapsulate both the mapping and scheduling solution restricted by the underlying target architecture, 
+ we introduce two categories of constraints. %The first is on mapping, communication and the execution sequences of tasks. The second restricts the behaviors between executed tasks.
+ 
+ The first category of constraints restricts the mapping of tasks on processors,  the inter-relation between dependent tasks, and tasks mapped on the same processors.
+ 	\begin{equation}\label{eq:1}
+	\begin{array}{l} 
+		\sum_{k=1}^{|P|}m_{i,k}==1, ~\textrm{ and }~m_{i,k} \leq a_{i,k} 
+	\end{array}
+	\end{equation}
+	\begin{equation}\label{eq:2}
+	\begin{array}{l} 
+		%b_{i,i}==0 & \\
+		b_{i,j}== 1-(\sum_{k=1}^{|P|} \mid m_{i,k}-m_{j,k}\mid)/2, \textit{ for }  i\neq j\\
+	\end{array}
+	\end{equation}
+	\begin{equation}\label{eq:3}
+	\begin{array}{l} 
+		\sum^{|P|}_{k=1} bp_{k,i,j} == b_{i,j}  ~\textrm{ and }
+		bp_{k,i,j} \leq (m_{i,k} + m_{j,k})/2
+	\end{array}		
+	\end{equation}
+	\begin{equation}\label{eq:4}
+		%\begin{array}{l}
+			o_{i,j} \geq d_{i,j} - b_{i,j}  ~\textrm{ and }~
+			o_{i,j} \leq d_{i,j}
+		%\end{array}
+		%o_{i,j}= ((1- b_{i,j})+d_{i,j}) ~div ~2
+	\end{equation}
+	\begin{equation}\label{eq:5}
+		\begin{array}{l}
+			%q_{k,i,i} ==0 \\
+			\sum^{|P|}_{k=1} q_{k,i,j}==1 \textrm{ and } \sum^{|T|}_{i,j=1} q_{k,i,j} == (\sum^{|T|}_{i,j=1} bp_{k,i,j}) /2\\
+			q_{k,i,j} + q_{k,j,i} \geq bp_{k,i,j} \textrm{ and }q_{k,i,j}*q_{k,j,l}\leq q_{k,i,l} \\
+  		%(q_{k,i,j}==1) + (q_{k',i,j}==1) \leq 1 \textit{ for } k\neq k' \\
+			%\sum^{|T|}_{i,j} q_{k,i,j} == (\sum^{|T|}_{i,j} bp_{k,i,j}) /2\\
+		\end{array}
+	\end{equation}
+%\begin{itemize}
+Constraint \ref{eq:1} requires every task can only be mapped to a unique and valid processor. %, and a task can only be mapped to the allowed processors.
+Constraints \ref{eq:2},\ref{eq:3} show that the physical relations between two tasks can be inferred from the mapping relation.
+Constraints \ref{eq:4} indicates that inter-processor communication is required for two tasks with precedence relation, which are not allocated to the same processor.
+Constraint \ref{eq:5} presents that the execution relation of tasks on the same processor is static and transitive. 
+	
+%\end{itemize}
+
+The second category of constraints regulates the behavior of executed tasks on same processors, different processors and within various iterations. Though the cost of data transmission is invisible for processors,  %as we do not consider the optimization with pipelining or data prefetch, 
+the cost for initializing communication and the duration for waiting data to be transmitted cannot be ignored. As we assume that data from one source can be transmitted to different destinations simultaneously, transmitting data from the same source only needs one initializing. In the following, we introduce variable $e^u_i=\tau^u_i+\kappa_i + \eta*((\sum^{|T|}_{l=1} o_{i,l})\geq 1)$, to be the end time of processor occupation for task $t_i$ at $u$th iteration, whose duration includes task execution and communication initialization.
+	\begin{equation}\label{eq:6}
+		%\Delta\geq \tau^N_{i}+\sum_k^{|P|} m_{i,k}*e_{i,k}
+		{\cal{M}}\geq \tau^N_{i}+\kappa_i
+	\end{equation}
+	\begin{equation}\label{eq:10}
+		% \tau^{u}_{i}+\sum_{l=1}^{|P|} m_{i,l}*e_{i,l} +max\{1\leq l\leq |T| ~|(o_{i,l}* c_{i,l}\}\leq \tau^{v}_{i}
+		 %\tau^{u}_{i}+\kappa_i +\eta*((\sum^{|T|}_l o_{i,l})\geq 1)\leq \tau^{v}_{i}
+		 e^u_i \leq \tau^{v}_{i} \textrm{ for } u<v
+	\end{equation}
+	\begin{equation}\label{eq:7}
+	\begin{array}{l}
+		%\tau^{u}_{i}+\sum_k^{|P|}m_{i,k}*e_{i,k}+o_{i,j}* c_{i,j}\leq   \tau^u_{j} 
+		%\tau^{u}_{i}+\kappa_i+\eta*((\sum^{|T|}_l o_{i,l})\geq 1) + o_{i,j}* c_{i,j}\leq   \tau^u_{j} 
+		%(d_{i,j}==0) + (\tau^u_{j}-e^u_i-  o_{i,j}* c_{i,j} \geq 0)\geq 1 \\
+		d_{i,j}\Rightarrow \tau^u_{j} \geq e^u_i+  o_{i,j}* c_{i,j} 
+	\end{array}	
+	\end{equation}
+	\begin{equation}\label{eq:8}
+	\begin{array}{l}
+		%\tau^{u}_{i}+\sum_{l=1}^{|P|}m_{i,l}*e_{i,l} + max\{1\leq l\leq |T| ~|(o_{i,l}* c_{i,l}\}\leq  \\
+		%\tau^{u}_{i}+\kappa_i + \eta*((\sum^{|T|}_l o_{i,l})\geq 1)\leq   \tau^u_{j} + M*(1-q_{k,i,j}) 
+		%(q_{k,i,j}==0) + (\tau^u_j - e^u_i\geq 0)\geq 1\\
+		q_{k,i,j} \Rightarrow \tau^u_j \geq e^u_i
+	\end{array}
+	\end{equation}
+	\begin{equation}\label{eq:9}
+	\begin{array}{l}
+		%\tau^{u}_{i}+\sum_{l=1}^{|P|}m_{i,l}*e_{i,l} + max\{1\leq l\leq |T| ~|(o_{i,l}* c_{i,l}\}\leq  \\
+		%(b_{ij}==0)+(\tau^{u}_{i}-e^v_j\geq 0) + (\tau^{v}_{j}-e^u_i\geq 0)\geq 1 \\
+		b_{ij} \Rightarrow \tau^{u}_{i}\geq e^v_j \vee \tau^{v}_{j}\geq e^u_i
+
+	\end{array}
+	\end{equation}
+	\begin{equation}\label{con:strict}
+	\begin{array}{l}
+		 %\tau^{u}_{j}+\sum_{l=1}^{|P|} m_{j,l}*e_{j,l} +max\{~|(o_{j,l}* c_{j,l}\}\leq \tau^{v}_{i} + M*(1-q_{k,i,j})
+		% \tau^{u}_{j}+\kappa_i +\eta*((\sum^{|T|}_l o_{i,l})\geq 1)\leq \tau^{v}_{i} + M*(1-q_{k,i,j})
+		%(q_{k,i,j}==0) + (\tau^v_j- e^u_i \geq 0) \geq 1 \textrm{ for } u<v \\
+		q_{k,i,j} \Rightarrow \tau^v_j\geq  e^u_i  \textrm{ for } u<v \\
+	\end{array}
+	\end{equation}
+	
+Constraint \ref{eq:6} requires that the makespan of the  execution  should consider the termination of all the tasks.
+Constraint \ref{eq:10} describes that 	
+the execution of a task at $v$th iteration should wait for the finish of its $u$th iteration, if $u< v$.
+Constraint \ref{eq:7} shows that the start time of its execution for $t_j$ at the $u$th iteration is later than the finish time of $t_i$ at the same iteration, if $t_j$ depends on $t_i$.
+Constraint \ref{eq:8} says that the execution of two tasks on the same processor is sequential. And Constraint \ref{eq:9} requires that the execution of two tasks on the same processor cannot overlap.
+Constraint \ref{con:strict} requires that the execution of task $t_j$ in later iteration $v$ should not be earlier than any other tasks executed on the same processor in an earlier iteration $u$, for $u< v$. This constraint can be relaxed if we allow one task to be executed several times before other tasks. These constraints will finally be transformed to normal forms of integer linear programming models with Big-M method~\cite{winston2003introduction}.
+
+\vspace{-5pt}
+\subsection{Objective}
+To minimize the makespan and obtain a balanced workload, we have two goals for minimization, which are discussed in the abrove section. 
+	\begin{equation}
+		minimize({\cal{M}}) \textrm{, ~~~  and  ~~~     }	minimize({\cal{W}})
+	\end{equation} 
+	
+	% Bibliography with BibTeX
+%	\begin{equation}
+%		minimize({\cal{W}})
+%	\end{equation}
+%Traditionally, to jointly optimized them in an ILP setting, we can introduce non-negative weights to define the problem as a linear combination of single objectives.
+%\begin{equation}
+% minimize(\lambda_1*\Delta + \lambda_2*W)
+%\end{equation}
+%where $\lambda_1, \lambda_2$ are non-negative weights with $\lambda_1+\lambda_2=1$. 	

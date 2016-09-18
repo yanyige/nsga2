@@ -1,0 +1,150 @@
+%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is the LaTeX source for the instructions to authors using
+% the LaTeX document class 'llncs.cls' for contributions to
+% the Lecture Notes in Computer Sciences series.
+% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
+%
+% It may be used as a template for your own input - copy it
+% to a new file with a new name and use it as the basis
+% for your article.
+%
+% NB: the document class 'llncs' has its own and detailed documentation, see
+% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\documentclass[conference]{IEEEtran}
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+
+\usepackage{bbding}
+
+\usepackage{wrapfig}
+\usepackage{threeparttable}
+\usepackage{amssymb,amsmath}
+\setcounter{tocdepth}{3}
+%\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{subfigure}
+%\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithmicx,algorithm}
+\usepackage{url}
+\usepackage{color}
+%\usepackage{verbatim}
+\usepackage{multicol}
+\usepackage{lipsum}
+\usepackage{xspace}
+\newsavebox{\tablebox}
+\usepackage{multirow}
+\usepackage{setspace}
+%\usepackage{enumitem}
+\usepackage{paralist}
+\let\itemize\compactitem
+\let\enditemize\endcompactitem
+\let\enumerate\compactenum
+\let\endenumerate\endcompactenum
+\let\description\compactdesc
+\let\enddescription\endcompactdesc
+%\pltopsep=0pt%\medskipamount
+%\plitemsep=0pt
+%\plparsep=0pt
+%
+%%=============added by Rj to reduce space
+\setlength{\parskip}{1pt}
+\newcommand{\marginremark}[2]{\annotatedmarginremark{\clubsuit}{$\clubsuit$}{#1}{#2}}
+\newcommand{\rjnote}{\color{red}}
+\newcommand{\ccnote}[1]{\marginremark{CH}{#1}}
+%\newcommand{\rjnote}[1]{\marginremark{RJ}{#1}}
+\def\mathbi#1{\textbf{\em #1}}
+ \newcommand{\comment}[1]{}
+  \newcommand{\sig}[1]{\textsf{{\small #1}}}
+  \newcommand{\nn}{\mathbb{N}}
+\newcommand{\bool}{\mathbb{B}}
+%\theoremstyle{definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{defi}{Definition}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+\begin{document}
+
+%\mainmatter  % start of an individual contribution
+
+% first the title is needed
+\title{A hybrid algorithm for multi-objective mapping and scheduling optimization of MPSoCs}
+% a short form should be given in case it is too long for the running head
+
+% the name(s) of the author(s) follow(s) next
+%
+% NB: Chinese authors should write their first names(s) in front of
+% their surnames. This ensures that the names appear correctly in
+% the running heads and the author index.
+%
+
+
+%\author{
+%
+%\IEEEauthorblockN{Rongjie Yan\IEEEauthorrefmark{1},  Yupeng Zhou\IEEEauthorrefmark{2},   Yige Yan\IEEEauthorrefmark{2}, Minhao Yin\Envelope\IEEEauthorrefmark{2}, Min Yu\IEEEauthorrefmark{3}, Chih-Hong Cheng\IEEEauthorrefmark{4},  Feifei Ma\IEEEauthorrefmark{1}, Kai Huang\IEEEauthorrefmark{3}}
+%\IEEEauthorblockA{\IEEEauthorrefmark{1}State Key Laboratory of Computer Science, Institute of Software, Beijing, China
+%}
+%\IEEEauthorblockA{\IEEEauthorrefmark{2}Schlool of Computer Science and Information Technology, Northeast Normal University, Changchun, China
+%}
+%\IEEEauthorblockA{\IEEEauthorrefmark{3}Department of ISEE, Zhejiang University, Hangzhou, China
+%}
+%\IEEEauthorblockA{\IEEEauthorrefmark{4}Fortiss - An-Institut der TU M\"{u}nchen, Munich, Germany 
+%}
+%\IEEEauthorblockA{\{yrj, maff\}@ios.ac.cn; \{zhouyp605,yanyg270,ymh\}@nenu.edu.cn;\{11131030,huangk\}@zju.edu.cn;cheng@fortiss.org
+%}
+%}
+\maketitle
+\begin{abstract}
+Multi-processors are widely used in embedded systems. The resource limitation requires designers to find optimizations among various design considerations. In this paper, we model tradeoffs between makespan and the balance of processor workloads for the problem of tasks mapping and scheduling in a multi-processor environment. To encode the effect of precedence relations between different tasks in scheduling, the model also considers communication cost in the formulation. Furthermore, to approximate the Pareto front of the multi-objective optimization problem, we propose a multi-objective hybrid algorithm(MOHA) by integrating pareto local search into an evolutionary process. We evaluate the efficiency of the method on a series of benchmarks and compare the results with existing multi-objective optimization methods. Experimental results show that the proposed algorithm can obtain better solutions for various real-world cases, compared with state-of-the-art methods.
+
+ \end{abstract}
+%\tableofcontents
+\vspace{-5pt}
+\input{introduction}
+%\vspace{-5pt}
+\input{relatedwork}
+
+\input{preliminary}
+%\cite{DBLP:journals/jcp/YaoZW14} considers the existence of DMA for transmission optimization. Both data and task parallelism are encoded in the constriants for mapping and scheduling optimization.\cite{yang2008ilp}. 
+
+\input{model}
+
+
+
+% ========================
+%---------- to be added 
+% ========================
+\input{localsearch}
+
+\input{implementation}
+
+\section{Conclusion and future work\label{se:con}}
+To meet increasing requirements on  high  system performance and low power consumption, we have proposed two optimization objectives, i.e., makespan minimisation and workload balance, for mapping and scheduling problem of MPSoCs. The model for optimization encapsulates task scheduling, with the consideration of both computation and communication cost. To deal with the optimization of large scale applications, we have also proposed a multi-objective hybrid algorithm. Compared from the generated solutions, our algorithm outperforms  methods such as CPLEX and NSGAII.  
+For the future work, we will refine the model to encompass more objectives to be optimized, as well as extending the current algorithm from two to more objectives optimization.  
+\bibliographystyle{abbrv}
+\bibliography{ilp}
+\end{document}
